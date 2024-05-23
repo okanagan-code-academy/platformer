@@ -1,6 +1,9 @@
 namespace SpriteKind {
     export const Collectible = SpriteKind.create()
     export const Box = SpriteKind.create()
+    export const GrowPower = SpriteKind.create()
+    export const Tile = SpriteKind.create()
+    export const ShootPower = SpriteKind.create()
 }
 let level: number = -1
 let jumps: number = 0
@@ -9,6 +12,7 @@ let isFalling: boolean = false
 info.setScore(0)
 
 function selectLevel() {
+    scene.setBackgroundColor(9)
     if (level == -1) {
         tiles.setTilemap(tilemap`test`)
         createCollectiblesOnTilemap()
@@ -42,7 +46,65 @@ function createPlayer(){
     createPlayerWalkingAnimation()
     createPlayerJumpingAnimation()
     createPlayerIdleAnimation()
+    resetPlayerPowerups()
     tiles.placeOnRandomTile(playerSprite, assets.tile`spawnTile`)
+}
+function resetPlayerPowerups(){
+    playerSprite.scale = 1
+    sprites.setDataBoolean(playerSprite, "GrowPower", false)
+    sprites.setDataBoolean(playerSprite, "ShootPower", false)
+}
+// Powerup Object
+let powerUpObject = {
+    "image" : [
+        img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . f 5 . . . . . . .
+            . . . . . . . 5 7 5 . . . . . .
+            . . . . . . . . 7 5 5 . . . . .
+            . . . . . . . . 5 5 7 . . . . .
+            . . . . . . . . 7 5 7 . . . . .
+            . . . . . . . . 7 5 5 . . . . .
+            . . . . . . . . 5 5 5 . . . . .
+            . . . . . . . 7 5 5 7 . . . . .
+            . . . . . . 7 5 5 5 7 . . . . .
+            . . . f 5 5 5 5 7 5 . . . . . .
+            . . . . 5 7 7 5 7 . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+        `,
+        img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . e e e e e e e e e 4 . . .
+            . . . f f f f f f f f f . . . .
+            . . . . f f f . . . . . . . . .
+            . . . f f f . . . . . . . . . .
+            . . f f f . . . . . . . . . . .
+            . . f f . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+        `,
+        ],
+    "kind" : [
+        SpriteKind.GrowPower,
+        SpriteKind.ShootPower,
+    ]
+}
+// A function to create a Powerup
+function createPowerUp(powerUpType: number, targetLocation: tiles.Location){
+    let powerUpSprite: Sprite = sprites.create(powerUpObject["image"][powerUpType], powerUpObject["kind"][powerUpType])
+    powerUpSprite.ay = 300
+    powerUpSprite.setVelocity(Math.randomRange(-50, -25), -100)
+    tiles.placeOnTile(powerUpSprite, targetLocation)
 }
 
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
@@ -50,6 +112,41 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
         isFalling = true
         playerSprite.vy = -200
         jumps -= 1
+    }
+})
+controller.B.onEvent(ControllerButtonEvent.Pressed, function(){
+    if(sprites.readDataBoolean(playerSprite, "ShootPower")){
+        let projectileSprite: Sprite = sprites.create(img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . 2 2 2 2 . . . . . . .
+            . . . . 2 2 2 2 2 2 . . . . . .
+            . . . 2 2 5 5 5 5 2 2 . . . . .
+            . . 2 2 5 5 4 4 5 5 2 2 . . . .
+            . . 2 2 5 5 4 4 5 5 2 2 . . . .
+            . . 2 2 5 5 4 4 5 5 2 2 . . . .
+            . . . 2 2 5 5 5 5 2 2 . . . . .
+            . . . . 2 2 2 2 2 2 . . . . . .
+            . . . . . 2 2 2 2 . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+        `, SpriteKind.Projectile)
+        projectileSprite.setPosition(playerSprite.x, playerSprite.y)
+        projectileSprite.lifespan = 3000
+        projectileSprite.ay = 100
+        projectileSprite.setBounceOnWall(true)
+        projectileSprite.startEffect(effects.fire)
+        projectileSprite.vy = -10
+        if(characterAnimations.matchesRule(playerSprite, Predicate.FacingRight)){
+            projectileSprite.x += 10
+            projectileSprite.vx = 150
+        } else if(characterAnimations.matchesRule(playerSprite, Predicate.FacingLeft)){
+            projectileSprite.x -= 10
+            projectileSprite.vx = -150
+        }
     }
 })
 
@@ -61,7 +158,8 @@ scene.onHitWall(SpriteKind.Player, function(sprite, location){
     if(sprite.isHittingTile(CollisionDirection.Top)){
         if(tiles.tileAtLocationEquals(location, assets.tile`luckyTile`)){
             let targetLocation: tiles.Location = tiles.getTileLocation(location.column, location.row - 1)
-            createCollectible(targetLocation)
+            createPowerUp(randint(0, powerUpObject["image"].length-1), targetLocation)
+            // createCollectible(targetLocation)
             // tiles.setTileAt(location, assets.tile`depletedTile`)
             hitPowerBox(img`
                 . . . . . . . . . . . . . . . .
@@ -86,7 +184,9 @@ scene.onHitWall(SpriteKind.Player, function(sprite, location){
             hitPowerBox(assets.tile`depletedTile`, location)
         }
         if (tiles.tileAtLocationEquals(location, assets.tile`stoneUnbreakable`)){
-            if(Math.randomRange(1, 100) < 5){
+            if(sprites.readDataBoolean(sprite, "GrowPower")){
+                destroyTile(assets.tile`stoneUnbreakable`, location)
+            } else if(Math.randomRange(1, 100) < 5){
                 let targetLocation: tiles.Location = tiles.getTileLocation(location.column, location.row - 1)
                 createCollectible(targetLocation)
                 createCollectible(targetLocation)
@@ -112,6 +212,34 @@ scene.onHitWall(SpriteKind.Player, function(sprite, location){
         }
     }
 })
+
+function destroyTile(tileImage: Image, targetLocation: tiles.Location){
+    let tileSprite = sprites.create(tileImage, SpriteKind.Tile)
+    tiles.setTileAt(targetLocation, img`
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+    `)
+    tiles.setWallAt(targetLocation, false)
+    tiles.placeOnTile(tileSprite, targetLocation)
+    tileSprite.vy = -50
+    tileSprite.destroy(effects.disintegrate, 150)
+
+}
+
 
 // Update checkpoint once player overlaps
 scene.onOverlapTile(SpriteKind.Player, assets.tile`checkPointTile`, function(sprite, location){
@@ -1130,6 +1258,22 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Collectible, function(sprite, ot
     info.changeScoreBy(5)
     music.play(music.melodyPlayable(music.baDing), music.PlaybackMode.UntilDone)
 })
+sprites.onOverlap(SpriteKind.Player, SpriteKind.GrowPower, function(sprite, otherSprite){
+    otherSprite.destroy()
+    if(sprites.readDataBoolean(sprite, "GrowPower")){
+        return
+    }
+    sprites.setDataBoolean(sprite, "GrowPower", true)
+    sprite.scale = 1.5
+    sprite.vy = -100
+})
+sprites.onOverlap(SpriteKind.Player, SpriteKind.ShootPower, function (sprite, otherSprite) {
+    otherSprite.destroy()
+    if (sprites.readDataBoolean(sprite, "ShootPower")) {
+        return
+    }
+    sprites.setDataBoolean(sprite, "ShootPower", true)
+})
 
 function createCollectiblesOnTilemap(){
     for(let tileLocation of tiles.getTilesByType(assets.tile`collectibleSpawn`)){
@@ -1224,8 +1368,23 @@ game.onUpdate(function() {
     if(playerSprite.vy > 0){
         isFalling = true
     }
+    for(let powerUp of sprites.allOfKind(SpriteKind.GrowPower)){
+        if (powerUp.isHittingTile(CollisionDirection.Left)){
+            powerUp.vx = Math.randomRange(25, 50)
+        } else if (powerUp.isHittingTile(CollisionDirection.Right)){
+            powerUp.vx = Math.randomRange(-50, -25)
+        }
+    }
+    for (let powerUp of sprites.allOfKind(SpriteKind.ShootPower)) {
+        if (powerUp.isHittingTile(CollisionDirection.Left)) {
+            powerUp.vx = Math.randomRange(25, 50)
+        } else if (powerUp.isHittingTile(CollisionDirection.Right)) {
+            powerUp.vx = Math.randomRange(-50, -25)
+        }
+    }
     // playerSprite.sayText(isFalling)
     if(tiles.getTilesByType(assets.tile`luckyTile`).length <= 0) {
         tiles.setTileAt(tiles.getTilesByType(assets.tile`depletedTile`)._pickRandom(), assets.tile`luckyTile`)
     }
+
 })
