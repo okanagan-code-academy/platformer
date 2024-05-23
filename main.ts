@@ -78,30 +78,35 @@ let powerUpObject = {
         img`
             . . . . . . . . . . . . . . . .
             . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . e e e e e e e e e 4 . . .
-            . . . f f f f f f f f f . . . .
-            . . . . f f f . . . . . . . . .
-            . . . f f f . . . . . . . . . .
-            . . f f f . . . . . . . . . . .
-            . . f f . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
+            . . . . . . . 2 2 2 . . . . . .
+            . . . . . . 2 5 5 5 2 . . . . .
+            . . . . . 2 5 5 4 5 5 2 . . . .
+            . . . . . 2 5 4 4 4 5 2 . . . .
+            . . . . . 2 5 5 4 5 5 2 . . . .
+            . . . . . . 2 5 5 5 2 . . . . .
+            . . . . . . . 2 2 2 . . . . . .
+            . . . . . . 6 . 7 . . . . . . .
+            . . . . . . . 6 7 . 6 . . . . .
+            . . . . . . . . 7 6 . . . . . .
+            . . . . . . 6 . 7 . 6 . . . . .
+            . . . . . . . 6 7 6 . . . . . .
+            . . . . . . . . 7 . . . . . . .
             . . . . . . . . . . . . . . . .
         `,
         ],
     "kind" : [
         SpriteKind.GrowPower,
         SpriteKind.ShootPower,
+    ],
+    "scale" : [
+        0.75,
+        0.75,
     ]
 }
 // A function to create a Powerup
 function createPowerUp(powerUpType: number, targetLocation: tiles.Location){
     let powerUpSprite: Sprite = sprites.create(powerUpObject["image"][powerUpType], powerUpObject["kind"][powerUpType])
+    powerUpSprite.scale = powerUpObject["scale"][powerUpType]
     powerUpSprite.ay = 300
     powerUpSprite.setVelocity(Math.randomRange(-50, -25), -100)
     tiles.placeOnTile(powerUpSprite, targetLocation)
