@@ -6,6 +6,7 @@ namespace SpriteKind {
     export const ShootPower = SpriteKind.create()
     export const Selector = SpriteKind.create()
     export const Arrow = SpriteKind.create()
+    export const Indicator = SpriteKind.create()
 }
 let level: number = -1
 let jumps: number = 0
@@ -13,6 +14,7 @@ let delta: number = 0
 let playerSprite: Sprite = null
 let worldSelectSprite: Sprite = null
 let arrowSprite: Sprite = null
+let indicatorSprite: Sprite = null
 
 let isFalling: boolean = false
 let worldSelect: boolean = true
@@ -28,24 +30,25 @@ info.setScore(0)
 function selectLevel() {
     sprites.destroy(worldSelectSprite)
     sprites.destroy(arrowSprite)
+    sprites.destroy(indicatorSprite)
     if(worldSelect){
         worldSelectSprite  = sprites.create(img`
-            . . . . . f f f f f . . . . . .
-            . . . . f e e e e e f . . . . .
-            . . . f d d d d d d e f . . . .
-            . . f d f f d d f f d f f . . .
-            . c d d d e e d d d d e d f . .
-            . c d c d d d d c d d e f f . .
-            . c d d c c c c d d d e f f f f
-            . . c d d d d d d d e f f b d f
-            . . . c d d d d e e f f f d d f
-            . . . . f f f e e f e e e f f f
-            . . . . f e e e e e e e f f f .
-            . . . f e e e e e e f f f e f .
-            . . f f e e e e f f f f f e f .
-            . f b d f e e f b b f f f e f .
-            . f d d f f f f d d b f f f f .
-            . f f f f f f f f f f f f f . .
+            . . . . . . . . . . . . f f . .
+            . . . . . . . . . . . f d d f .
+            . . . . . f . . . . f d d d f .
+            . . . . f d f . . f d d f f . .
+            . . . f d d f f f 4 f f f f . .
+            . . . f 4 4 e e 4 f e e e d f .
+            . . . f e e e 4 f e e e e d 5 f
+            . . f e e e e 4 f e e e e e d f
+            . f e e e e e 4 f e e e e e d f
+            f e e f e e e 4 f e e e e d 5 f
+            e e f f 4 4 e e 4 f e e e d f .
+            e f . f d d f f f 4 f f f f . .
+            e e f . f d f . . f d d f f . .
+            f e e f . f . . . . f d d d f .
+            . f f . . . . . . . . f d d f .
+            . . . . . . . . . . . . f f . .
         `, SpriteKind.Selector)
         arrowSprite = sprites.create(img`
             . . . . . . . . . . . . . . . .
@@ -69,6 +72,159 @@ function selectLevel() {
         sprites.setDataBoolean(arrowSprite, "isVisible", false)
         arrowSprite.setFlag(SpriteFlag.Invisible, true)
         arrowSprite.setFlag(SpriteFlag.Ghost, true)
+        indicatorSprite = sprites.create(img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+        `, SpriteKind.Indicator)
+        animation.runImageAnimation(indicatorSprite, [
+            img`
+                ....................
+                ....................
+                ....................
+                ....................
+                ....................
+                ....................
+                ....................
+                ....................
+                ....................
+                ....................
+                ....................
+                ....................
+                ....................
+                ....................
+                ....................
+                ....................
+                ....................
+                ....................
+                ....................
+                ....................
+            `,
+            img`
+                ...88888888888888...
+                ..88............88..
+                .88..............88.
+                88................88
+                8..................8
+                8..................8
+                8..................8
+                8..................8
+                8..................8
+                8..................8
+                8..................8
+                8..................8
+                8..................8
+                8..................8
+                8..................8
+                8..................8
+                88................88
+                .88..............88.
+                ..88............88..
+                ...88888888888888...
+            `,
+            img`
+                ...88888888888888...
+                ..8899999999999988..
+                .8899..........9988.
+                8899............9988
+                899..............998
+                89................98
+                89................98
+                89................98
+                89................98
+                89................98
+                89................98
+                89................98
+                89................98
+                89................98
+                89................98
+                899..............998
+                8899............9988
+                .8899..........9988.
+                ..8899999999999988..
+                ...88888888888888...
+            `,
+            img`
+                ...88888888888888...
+                ..8899999999999988..
+                .8899aaaaaaaaaa9988.
+                8899aa........aa9988
+                899aa..........aa998
+                89aa............aa98
+                89a..............a98
+                89a..............a98
+                89a..............a98
+                89a..............a98
+                89a..............a98
+                89a..............a98
+                89a..............a98
+                89a..............a98
+                89aa............aa98
+                899aa..........aa998
+                8899aa........aa9988
+                .8899aaaaaaaaaa9988.
+                ..8899999999999988..
+                ...88888888888888...
+            `,
+            img`
+                ...88888888888888...
+                ..8899999999999988..
+                .8899..........9988.
+                8899............9988
+                899..............998
+                89................98
+                89................98
+                89................98
+                89................98
+                89................98
+                89................98
+                89................98
+                89................98
+                89................98
+                89................98
+                899..............998
+                8899............9988
+                .8899..........9988.
+                ..8899999999999988..
+                ...88888888888888...
+            `,
+            img`
+                ...88888888888888...
+                ..88............88..
+                .88..............88.
+                88................88
+                8..................8
+                8..................8
+                8..................8
+                8..................8
+                8..................8
+                8..................8
+                8..................8
+                8..................8
+                8..................8
+                8..................8
+                8..................8
+                8..................8
+                88................88
+                .88..............88.
+                ..88............88..
+                ...88888888888888...
+            `,
+        ], 100, true)
+        indicatorSprite.setFlag(SpriteFlag.Invisible, true)
         tiles.setTilemap(tilemap`worldSelect1`)
         tiles.placeOnTile(worldSelectSprite, tiles.getTileLocation(0, 13))
         tiles.placeOnTile(arrowSprite, worldSelectSprite.tilemapLocation())
@@ -268,15 +424,15 @@ scene.onHitWall(SpriteKind.Selector, function(sprite, location){
                 . . . . . . . . . . . . . . . .
                 . . . . . . . . . . . . . . . .
                 . . . . . . . . . . . . . . . .
-                . . . . . . . f . . . . . . . .
-                . . . . . . f 1 f . . . . . . .
-                . . . . . . f 1 f . . . . . . .
-                . . . . . . f 1 f . . . . . . .
-                . . . . . f f 1 f f . . . . . .
-                . . . . f 1 f 1 f 1 f . . . . .
-                . . . . . f 1 1 1 f . . . . . .
-                . . . . . . f 1 f . . . . . . .
-                . . . . . . . f . . . . . . . .
+                . . . . . . . 8 . . . . . . . .
+                . . . . . . 8 9 8 . . . . . . .
+                . . . . . . 8 9 8 . . . . . . .
+                . . . . . . 8 9 8 . . . . . . .
+                . . . . . 8 8 9 8 8 . . . . . .
+                . . . . 8 9 8 9 8 9 8 . . . . .
+                . . . . . 8 9 9 9 8 . . . . . .
+                . . . . . . 8 9 8 . . . . . . .
+                . . . . . . . 8 . . . . . . . .
                 . . . . . . . . . . . . . . . .
                 . . . . . . . . . . . . . . . .
                 . . . . . . . . . . . . . . . .
@@ -284,6 +440,8 @@ scene.onHitWall(SpriteKind.Selector, function(sprite, location){
             sprites.setDataBoolean(arrowSprite, "worldVertical", false)
             tiles.placeOnTile(arrowSprite, tiles.getTileLocation(worldSelectSprite.tilemapLocation().column, worldSelectSprite.tilemapLocation().row - 2))
             sprites.setDataBoolean(arrowSprite, "isVisible", true)
+            tiles.placeOnTile(indicatorSprite, worldSelectSprite.tilemapLocation())
+            indicatorSprite.setFlag(SpriteFlag.Invisible, false)
         }
     } else if (sprite.isHittingTile(CollisionDirection.Top) || sprite.isHittingTile(CollisionDirection.Bottom)) {
         if (tiles.tileAtLocationEquals(sprite.tilemapLocation(), assets.tile`worldVertical`)) {
@@ -300,13 +458,13 @@ scene.onHitWall(SpriteKind.Selector, function(sprite, location){
                 . . . . . . . . . . . . . . . .
                 . . . . . . . . . . . . . . . .
                 . . . . . . . . . . . . . . . .
-                . . . . . . . . . f . . . . . .
-                . . . . . . . . f 1 f . . . . .
-                . . . . . f f f f f 1 f . . . .
-                . . . . f 1 1 1 1 1 1 1 f . . .
-                . . . . . f f f f f 1 f . . . .
-                . . . . . . . . f 1 f . . . . .
-                . . . . . . . . . f . . . . . .
+                . . . . . . . . . 8 . . . . . .
+                . . . . . . . . 8 9 8 . . . . .
+                . . . . . 8 8 8 8 8 9 8 . . . .
+                . . . . 8 9 9 9 9 9 9 9 8 . . .
+                . . . . . 8 8 8 8 8 9 8 . . . .
+                . . . . . . . . 8 9 8 . . . . .
+                . . . . . . . . . 8 . . . . . .
                 . . . . . . . . . . . . . . . .
                 . . . . . . . . . . . . . . . .
                 . . . . . . . . . . . . . . . .
@@ -315,6 +473,8 @@ scene.onHitWall(SpriteKind.Selector, function(sprite, location){
             sprites.setDataBoolean(arrowSprite, "worldVertical", true)
             tiles.placeOnTile(arrowSprite, tiles.getTileLocation(worldSelectSprite.tilemapLocation().column - 2, worldSelectSprite.tilemapLocation().row))
             sprites.setDataBoolean(arrowSprite, "isVisible", true)
+            tiles.placeOnTile(indicatorSprite, worldSelectSprite.tilemapLocation())
+            indicatorSprite.setFlag(SpriteFlag.Invisible, false)
         }
     }
 })
@@ -1556,6 +1716,7 @@ game.onUpdate(function(){
     if (!tiles.tileAtLocationEquals(worldSelectSprite.tilemapLocation(), assets.tile`worldHorizontal`) && !tiles.tileAtLocationEquals(worldSelectSprite.tilemapLocation(), assets.tile`worldVertical`)) {
         arrowSprite.setFlag(SpriteFlag.Invisible, true)
         sprites.setDataBoolean(arrowSprite, "isVisible", false)
+        indicatorSprite.setFlag(SpriteFlag.Invisible, true)
         delta = 0
     }
     if(!sprites.readDataBoolean(arrowSprite, "isVisible")){
