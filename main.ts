@@ -8,6 +8,7 @@ namespace SpriteKind {
     export const Arrow = SpriteKind.create()
     export const Indicator = SpriteKind.create()
 }
+
 let level: number = -1
 let jumps: number = 0
 let delta: number = 0
@@ -422,6 +423,7 @@ function createPowerUp(powerUpType: number, targetLocation: tiles.Location){
     powerUpSprite.scale = powerUpObject["scale"][powerUpType]
     powerUpSprite.ay = 300
     powerUpSprite.setVelocity(Math.randomRange(-50, -25), -100)
+    sprites.setDataNumber(powerUpSprite, "speed", powerUpSprite.vx)
     tiles.placeOnTile(powerUpSprite, targetLocation)
 }
 
@@ -1910,18 +1912,24 @@ game.onUpdate(function() {
         isFalling = true
     }
     for(let powerUp of sprites.allOfKind(SpriteKind.GrowPower)){
-        if (powerUp.isHittingTile(CollisionDirection.Left)){
-            powerUp.vx = Math.randomRange(25, 50)
-        } else if (powerUp.isHittingTile(CollisionDirection.Right)){
-            powerUp.vx = Math.randomRange(-50, -25)
+        if (powerUp.isHittingTile(CollisionDirection.Left) || powerUp.isHittingTile(CollisionDirection.Right)) {
+            powerUp.vx = -sprites.readDataNumber(powerUp, "speed")
         }
+        // if (powerUp.isHittingTile(CollisionDirection.Left)){
+        //     powerUp.vx = Math.randomRange(25, 50)
+        // } else if (powerUp.isHittingTile(CollisionDirection.Right)){
+        //     powerUp.vx = Math.randomRange(-50, -25)
+        // }
     }
     for (let powerUp of sprites.allOfKind(SpriteKind.ShootPower)) {
-        if (powerUp.isHittingTile(CollisionDirection.Left)) {
-            powerUp.vx = Math.randomRange(25, 50)
-        } else if (powerUp.isHittingTile(CollisionDirection.Right)) {
-            powerUp.vx = Math.randomRange(-50, -25)
+        if (powerUp.isHittingTile(CollisionDirection.Left) || powerUp.isHittingTile(CollisionDirection.Right)){
+            powerUp.vx = -sprites.readDataNumber(powerUp, "speed")
         }
+        // if (powerUp.isHittingTile(CollisionDirection.Left)) {
+        //     powerUp.vx = Math.randomRange(25, 50)
+        // } else if (powerUp.isHittingTile(CollisionDirection.Right)) {
+        //     powerUp.vx = Math.randomRange(-50, -25)
+        // }
     }
     // playerSprite.sayText(isFalling)
     if(tiles.getTilesByType(assets.tile`luckyTile`).length <= 0) {
