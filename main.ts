@@ -17,7 +17,7 @@ let arrowSprite: Sprite = null
 let indicatorSprite: Sprite = null
 
 let isFalling: boolean = false
-let worldSelect: boolean = true
+let worldSelect: boolean = false
 let tilemapList: tiles.TileMapData[] = [
     tilemap`level1`,
     tilemap`level2`,
@@ -32,25 +32,41 @@ function selectLevel() {
     sprites.destroy(arrowSprite)
     sprites.destroy(indicatorSprite)
     if(worldSelect){
-        worldSelectSprite  = sprites.create(img`
-            . . . . . . . . . . . . f f . .
-            . . . . . . . . . . . f d d f .
-            . . . . . f . . . . f d d d f .
-            . . . . f d f . . f d d f f . .
-            . . . f d d f f f 4 f f f f . .
-            . . . f 4 4 e e 4 f e e e d f .
-            . . . f e e e 4 f e e e e d 5 f
-            . . f e e e e 4 f e e e e e d f
-            . f e e e e e 4 f e e e e e d f
-            f e e f e e e 4 f e e e e d 5 f
-            e e f f 4 4 e e 4 f e e e d f .
-            e f . f d d f f f 4 f f f f . .
-            e e f . f d f . . f d d f f . .
-            f e e f . f . . . . f d d d f .
-            . f f . . . . . . . . f d d f .
-            . . . . . . . . . . . . f f . .
-        `, SpriteKind.Selector)
-        arrowSprite = sprites.create(img`
+        createLevelSelect()
+        return
+    }
+    scene.setBackgroundColor(9)
+    if (level < 0 || level >= tilemapList.length) {
+        tiles.setTilemap(tilemap`test`)
+    } else {
+        tiles.setTilemap(tilemapList[level])
+    }
+    createCollectiblesOnTilemap()
+    createPlayer()
+}
+selectLevel()
+
+function createLevelSelect(){
+    worldSelectSprite = sprites.create(img`
+        . . . . . . . . . . . . f f . .
+        . . . . . . . . . . . f d d f .
+        . . . . . f . . . . f d d d f .
+        . . . . f d f . . f d d f f . .
+        . . . f d d f f f 4 f f f f . .
+        . . . f 4 4 e e 4 f e e e d f .
+        . . . f e e e 4 f e e e e d 5 f
+        . . f e e e e 4 f e e e e e d f
+        . f e e e e e 4 f e e e e e d f
+        f e e f e e e 4 f e e e e d 5 f
+        e e f f 4 4 e e 4 f e e e d f .
+        e f . f d d f f f 4 f f f f . .
+        e e f . f d f . . f d d f f . .
+        f e e f . f . . . . f d d d f .
+        . f f . . . . . . . . f d d f .
+        . . . . . . . . . . . . f f . .
+    `, SpriteKind.Selector)
+    worldSelectSprite.z = 100
+    arrowSprite = sprites.create(img`
             . . . . . . . . . . . . . . . .
             . . . . . . . . . . . . . . . .
             . . . . . . . . . . . . . . . .
@@ -68,11 +84,11 @@ function selectLevel() {
             . . . . . . . . . . . . . . . .
             . . . . . . . . . . . . . . . .
         `, SpriteKind.Arrow)
-        sprites.setDataBoolean(arrowSprite, "worldVertical", false)
-        sprites.setDataBoolean(arrowSprite, "isVisible", false)
-        arrowSprite.setFlag(SpriteFlag.Invisible, true)
-        arrowSprite.setFlag(SpriteFlag.Ghost, true)
-        indicatorSprite = sprites.create(img`
+    sprites.setDataBoolean(arrowSprite, "worldVertical", false)
+    sprites.setDataBoolean(arrowSprite, "isVisible", false)
+    arrowSprite.setFlag(SpriteFlag.Invisible, true)
+    arrowSprite.setFlag(SpriteFlag.Ghost, true)
+    indicatorSprite = sprites.create(img`
             . . . . . . . . . . . . . . . .
             . . . . . . . . . . . . . . . .
             . . . . . . . . . . . . . . . .
@@ -90,157 +106,233 @@ function selectLevel() {
             . . . . . . . . . . . . . . . .
             . . . . . . . . . . . . . . . .
         `, SpriteKind.Indicator)
-        animation.runImageAnimation(indicatorSprite, [
-            img`
-                ....................
-                ....................
-                ....................
-                ....................
-                ....................
-                ....................
-                ....................
-                ....................
-                ....................
-                ....................
-                ....................
-                ....................
-                ....................
-                ....................
-                ....................
-                ....................
-                ....................
-                ....................
-                ....................
-                ....................
-            `,
-            img`
-                ...88888888888888...
-                ..88............88..
-                .88..............88.
-                88................88
-                8..................8
-                8..................8
-                8..................8
-                8..................8
-                8..................8
-                8..................8
-                8..................8
-                8..................8
-                8..................8
-                8..................8
-                8..................8
-                8..................8
-                88................88
-                .88..............88.
-                ..88............88..
-                ...88888888888888...
-            `,
-            img`
-                ...88888888888888...
-                ..8899999999999988..
-                .8899..........9988.
-                8899............9988
-                899..............998
-                89................98
-                89................98
-                89................98
-                89................98
-                89................98
-                89................98
-                89................98
-                89................98
-                89................98
-                89................98
-                899..............998
-                8899............9988
-                .8899..........9988.
-                ..8899999999999988..
-                ...88888888888888...
-            `,
-            img`
-                ...88888888888888...
-                ..8899999999999988..
-                .8899aaaaaaaaaa9988.
-                8899aa........aa9988
-                899aa..........aa998
-                89aa............aa98
-                89a..............a98
-                89a..............a98
-                89a..............a98
-                89a..............a98
-                89a..............a98
-                89a..............a98
-                89a..............a98
-                89a..............a98
-                89aa............aa98
-                899aa..........aa998
-                8899aa........aa9988
-                .8899aaaaaaaaaa9988.
-                ..8899999999999988..
-                ...88888888888888...
-            `,
-            img`
-                ...88888888888888...
-                ..8899999999999988..
-                .8899..........9988.
-                8899............9988
-                899..............998
-                89................98
-                89................98
-                89................98
-                89................98
-                89................98
-                89................98
-                89................98
-                89................98
-                89................98
-                89................98
-                899..............998
-                8899............9988
-                .8899..........9988.
-                ..8899999999999988..
-                ...88888888888888...
-            `,
-            img`
-                ...88888888888888...
-                ..88............88..
-                .88..............88.
-                88................88
-                8..................8
-                8..................8
-                8..................8
-                8..................8
-                8..................8
-                8..................8
-                8..................8
-                8..................8
-                8..................8
-                8..................8
-                8..................8
-                8..................8
-                88................88
-                .88..............88.
-                ..88............88..
-                ...88888888888888...
-            `,
-        ], 100, true)
-        indicatorSprite.setFlag(SpriteFlag.Invisible, true)
-        tiles.setTilemap(tilemap`worldSelect1`)
-        tiles.placeOnTile(worldSelectSprite, tiles.getTileLocation(0, 13))
-        tiles.placeOnTile(arrowSprite, worldSelectSprite.tilemapLocation())
-        scene.cameraFollowSprite(worldSelectSprite)
-        return
-    }
-    scene.setBackgroundColor(9)
-    if (level < 0 || level >= tilemapList.length) {
-        tiles.setTilemap(tilemap`test`)
-    } else {
-        tiles.setTilemap(tilemapList[level])
-    }
-    createCollectiblesOnTilemap()
-    createPlayer()
+    animation.runImageAnimation(indicatorSprite, [
+        img`
+            ....................
+            ....................
+            ....................
+            ....................
+            ....................
+            ....................
+            ....................
+            ....................
+            ....................
+            ....................
+            ....................
+            ....................
+            ....................
+            ....................
+            ....................
+            ....................
+            ....................
+            ....................
+            ....................
+            ....................
+        `,
+        img`
+            ...88888888888888...
+            ..88............88..
+            .88..............88.
+            88................88
+            8..................8
+            8..................8
+            8..................8
+            8..................8
+            8..................8
+            8..................8
+            8..................8
+            8..................8
+            8..................8
+            8..................8
+            8..................8
+            8..................8
+            88................88
+            .88..............88.
+            ..88............88..
+            ...88888888888888...
+        `,
+        img`
+            ...99999999999999...
+            ..9988888888888899..
+            .9988..........8899.
+            9988............8899
+            988..............889
+            98................89
+            98................89
+            98................89
+            98................89
+            98................89
+            98................89
+            98................89
+            98................89
+            98................89
+            98................89
+            988..............889
+            9988............8899
+            .9988..........8899.
+            ..9988888888888899..
+            ...99999999999999...
+        `,
+        img`
+            ...33333333333333...
+            ..3399999999999933..
+            .339988888888889933.
+            339988........889933
+            39988..........88993
+            3988............8893
+            398..............893
+            398..............893
+            398..............893
+            398..............893
+            398..............893
+            398..............893
+            398..............893
+            398..............893
+            3988............8893
+            39988..........88993
+            339988........889933
+            .339988888888889933.
+            ..3399999999999933..
+            ...33333333333333...
+        `,
+        img`
+            ....................
+            ....333333333333....
+            ...33999999999933...
+            ..3399888888889933..
+            .339988......889933.
+            .39988........88993.
+            .3988..........8893.
+            .398............893.
+            .398............893.
+            .398............893.
+            .398............893.
+            .398............893.
+            .398............893.
+            .3988..........8893.
+            .39988........88993.
+            .339988......889933.
+            ..3399888888889933..
+            ...33999999999933...
+            ....333333333333....
+            ....................
+        `,
+        img`
+            ....................
+            ....................
+            .....3333333333.....
+            ....339999999933....
+            ...33998888889933...
+            ..339988....889933..
+            ..39988......88993..
+            ..3988........8893..
+            ..398..........893..
+            ..398..........893..
+            ..398..........893..
+            ..398..........893..
+            ..3988........8893..
+            ..39988......88993..
+            ..339988....889933..
+            ...33998888889933...
+            ....339999999933....
+            .....3333333333.....
+            ....................
+            ....................
+        `,
+        img`
+            ....................
+            ....................
+            ....................
+            ......33333333......
+            .....3399999933.....
+            ....339988889933....
+            ...339988..889933...
+            ...39988....88993...
+            ...3988......8893...
+            ...398........893...
+            ...398........893...
+            ...3988......8893...
+            ...39988....88993...
+            ...339988..889933...
+            ....339988889933....
+            .....3399999933.....
+            ......33333333......
+            ....................
+            ....................
+            ....................
+        `,
+        img`
+            ....................
+            ....................
+            ....................
+            ....................
+            .......333333.......
+            ......33999933......
+            .....3399889933.....
+            ....339988889933....
+            ....39988..88993....
+            ....3988....8893....
+            ....3988....8893....
+            ....39988..88993....
+            ....339988889933....
+            .....3399889933.....
+            ......33999933......
+            .......333333.......
+            ....................
+            ....................
+            ....................
+            ....................
+        `,
+        img`
+            ....................
+            ....................
+            ....................
+            ....................
+            ....................
+            ........3333........
+            .......339933.......
+            ......33999933......
+            .....3399..9933.....
+            .....399....993.....
+            .....399....993.....
+            .....3399..9933.....
+            ......33999933......
+            .......339933.......
+            ........3333........
+            ....................
+            ....................
+            ....................
+            ....................
+            ....................
+        `,
+        img`
+            ....................
+            ....................
+            ....................
+            ....................
+            ....................
+            ....................
+            .........33.........
+            ........3333........
+            .......33..33.......
+            ......33....33......
+            ......33....33......
+            .......33..33.......
+            ........3333........
+            .........33.........
+            ....................
+            ....................
+            ....................
+            ....................
+            ....................
+            ....................
+        `,
+    ], 125, true)
+    indicatorSprite.setFlag(SpriteFlag.Invisible, true)
+    tiles.setTilemap(tilemap`worldSelect1`)
+    tiles.placeOnTile(worldSelectSprite, tiles.getTileLocation(0, 13))
+    scene.cameraFollowSprite(worldSelectSprite)
 }
-selectLevel()
 
 function createPlayer(){
     playerSprite = sprites.create(img`
@@ -408,6 +500,83 @@ function moveWorldSelectSprite(velocityX: number, velocityY: number){
         return
     }
     worldSelectSprite.setVelocity(velocityX * 50, velocityY * 50)
+    if(worldSelectSprite.vx > 0){
+        worldSelectSprite.setImage(img`
+            . . . . . . . . . . . . f f . .
+            . . . . . . . . . . . f d d f .
+            . . . . . f . . . . f d d d f .
+            . . . . f d f . . f d d f f . .
+            . . . f d d f f f 4 f f f f . .
+            . . . f 4 4 e e 4 f e e e d f .
+            . . . f e e e 4 f e e e e d 5 f
+            . . f e e e e 4 f e e e e e d f
+            . f e e e e e 4 f e e e e e d f
+            f e e f e e e 4 f e e e e d 5 f
+            e e f f 4 4 e e 4 f e e e d f .
+            e f . f d d f f f 4 f f f f . .
+            e e f . f d f . . f d d f f . .
+            f e e f . f . . . . f d d d f .
+            . f f . . . . . . . . f d d f .
+            . . . . . . . . . . . . f f . .
+        `)
+    } else if (worldSelectSprite.vx < 0){
+        worldSelectSprite.setImage(img`
+            . . f f . . . . . . . . . . . .
+            . f d d f . . . . . . . . . . .
+            . f d d d f . . . . f . . . . .
+            . . f f d d f . . f d f . . . .
+            . . f f f f 4 f f f d d f . . .
+            . f d e e e f 4 e e 4 4 f . . .
+            f 5 d e e e e f 4 e e e f . . .
+            f d e e e e e f 4 e e e e f . .
+            f d e e e e e f 4 e e e e e f .
+            f 5 d e e e e f 4 e e e f e e f
+            . f d e e e f 4 e e 4 4 f f e e
+            . . f f f f 4 f f f d d f . f e
+            . . f f d d f . . f d f . f e e
+            . f d d d f . . . . f . f e e f
+            . f d d f . . . . . . . . f f .
+            . . f f . . . . . . . . . . . .
+        `)
+    } else if (worldSelectSprite.vy > 0){
+        worldSelectSprite.setImage(img`
+            . . f e e e f . . . . . . . . .
+            . f e e f e e f . . . . . . . .
+            . f e f . f e e f . . . . . . .
+            . . f . f f f e e f f f . . . .
+            . . . f d 4 e e e e 4 d f . . .
+            . . f d d 4 e e e e 4 d d f . .
+            . . . f f e e e e e e f f . . .
+            . . . . f e 4 4 4 4 e f . . . .
+            . . . . f 4 f f f f 4 f . . . .
+            . . . f 4 f e e e e f 4 f . . .
+            . . f d f e e e e e e f d f . .
+            . f d d f e e e e e e f d d f .
+            f d d f f e e e e e e f f d d f
+            f d d f f d d e e d d f f d d f
+            . f f . . f 5 d d 5 f . . f f .
+            . . . . . . f f f f . . . . . .
+        `)
+    } else if (worldSelectSprite.vy < 0){
+        worldSelectSprite.setImage(img`
+            . . . . . . f f f f . . . . . .
+            . f f . . f 5 d d 5 f . . f f .
+            f d d f f d d e e d d f f d d f
+            f d d f f e e e e e e f f d d f
+            . f d d f e e e e e e f d d f .
+            . . f d f e e e e e e f d f . .
+            . . . f 4 f e e e e f 4 f . . .
+            . . . . f 4 f f f f 4 f . . . .
+            . . . . f e 4 4 4 4 e f . . . .
+            . . . f f e e e e e e f f . . .
+            . . f d d 4 e e e e 4 d d f . .
+            . . . f d 4 e e e e 4 d f . . .
+            . . . . f f f e e f f f . f . .
+            . . . . . . . f e e f . f e f .
+            . . . . . . . . f e e f e e f .
+            . . . . . . . . . f e e e f . .
+        `)
+    }
 }
 scene.onHitWall(SpriteKind.Selector, function(sprite, location){
     if(sprite.isHittingTile(CollisionDirection.Right) || sprite.isHittingTile(CollisionDirection.Left)){
@@ -513,7 +682,7 @@ scene.onHitWall(SpriteKind.Player, function(sprite, location){
         }
         if (tiles.tileAtLocationEquals(location, assets.tile`stoneUnbreakable`)){
             if(sprites.readDataBoolean(sprite, "GrowPower")){
-                destroyTile(assets.tile`stoneUnbreakable`, location)
+                destroyTile(assets.tile`stoneUnbreakable`, location, effects.disintegrate)
             } else if(Math.randomRange(1, 100) < 5){
                 let targetLocation: tiles.Location = tiles.getTileLocation(location.column, location.row - 1)
                 createCollectible(targetLocation)
@@ -541,7 +710,7 @@ scene.onHitWall(SpriteKind.Player, function(sprite, location){
     }
 })
 
-function destroyTile(tileImage: Image, targetLocation: tiles.Location){
+function destroyTile(tileImage: Image, targetLocation: tiles.Location, effectType: effects.ParticleEffect){
     let tileSprite = sprites.create(tileImage, SpriteKind.Tile)
     tiles.setTileAt(targetLocation, img`
         . . . . . . . . . . . . . . . .
@@ -564,7 +733,7 @@ function destroyTile(tileImage: Image, targetLocation: tiles.Location){
     tiles.setWallAt(targetLocation, false)
     tiles.placeOnTile(tileSprite, targetLocation)
     tileSprite.vy = -50
-    tileSprite.destroy(effects.disintegrate, 150)
+    tileSprite.destroy(effectType, 150)
 
 }
 
@@ -1734,7 +1903,6 @@ game.onUpdate(function(){
 
 // Game Update for Main game
 game.onUpdate(function() {
-    
     if(worldSelect){
         return
     }
