@@ -18,7 +18,7 @@ let arrowSprite: Sprite = null
 let indicatorSprite: Sprite = null
 
 let isFalling: boolean = false
-let worldSelect: boolean = false
+let worldSelect: boolean = true
 let tilemapList: tiles.TileMapData[] = [
     tilemap`level1`,
     tilemap`level2`,
