@@ -9,16 +9,18 @@ namespace SpriteKind {
     export const Indicator = SpriteKind.create()
 }
 
-let level: number = -1
+let currentLevel: number = 3
 let jumps: number = 0
 let delta: number = 0
 let playerSprite: Sprite = null
-let worldSelectSprite: Sprite = null
+let levelSelectSprite: Sprite = null
 let arrowSprite: Sprite = null
 let indicatorSprite: Sprite = null
+let levelTilesList: tiles.Location[] = []
+let index: number = 0
 
 let isFalling: boolean = false
-let worldSelect: boolean = true
+let worldSelect: boolean = false
 let tilemapList: tiles.TileMapData[] = [
     tilemap`level1`,
     tilemap`level2`,
@@ -29,7 +31,10 @@ let tilemapList: tiles.TileMapData[] = [
 info.setScore(0)
 
 function selectLevel() {
-    sprites.destroy(worldSelectSprite)
+    sprites.destroyAllSpritesOfKind(SpriteKind.Collectible)
+    sprites.destroyAllSpritesOfKind(SpriteKind.GrowPower)
+    sprites.destroyAllSpritesOfKind(SpriteKind.ShootPower)
+    sprites.destroy(levelSelectSprite)
     sprites.destroy(arrowSprite)
     sprites.destroy(indicatorSprite)
     if(worldSelect){
@@ -37,10 +42,10 @@ function selectLevel() {
         return
     }
     scene.setBackgroundColor(9)
-    if (level < 0 || level >= tilemapList.length) {
+    if (currentLevel < 0 || currentLevel >= tilemapList.length) {
         tiles.setTilemap(tilemap`test`)
     } else {
-        tiles.setTilemap(tilemapList[level])
+        tiles.setTilemap(tilemapList[currentLevel])
     }
     createCollectiblesOnTilemap()
     createPlayer()
@@ -48,7 +53,7 @@ function selectLevel() {
 selectLevel()
 
 function createLevelSelect(){
-    worldSelectSprite = sprites.create(img`
+    levelSelectSprite = sprites.create(img`
         . . . . . . . . . . . . f f . .
         . . . . . . . . . . . f d d f .
         . . . . . f . . . . f d d d f .
@@ -66,7 +71,7 @@ function createLevelSelect(){
         . f f . . . . . . . . f d d f .
         . . . . . . . . . . . . f f . .
     `, SpriteKind.Selector)
-    worldSelectSprite.z = 100
+    levelSelectSprite.z = 100
     arrowSprite = sprites.create(img`
             . . . . . . . . . . . . . . . .
             . . . . . . . . . . . . . . . .
@@ -85,7 +90,7 @@ function createLevelSelect(){
             . . . . . . . . . . . . . . . .
             . . . . . . . . . . . . . . . .
         `, SpriteKind.Arrow)
-    sprites.setDataBoolean(arrowSprite, "worldVertical", false)
+    sprites.setDataBoolean(arrowSprite, "levelVertical", false)
     sprites.setDataBoolean(arrowSprite, "isVisible", false)
     arrowSprite.setFlag(SpriteFlag.Invisible, true)
     arrowSprite.setFlag(SpriteFlag.Ghost, true)
@@ -331,8 +336,68 @@ function createLevelSelect(){
     ], 125, true)
     indicatorSprite.setFlag(SpriteFlag.Invisible, true)
     tiles.setTilemap(tilemap`worldSelect1`)
-    tiles.placeOnTile(worldSelectSprite, tiles.getTileLocation(0, 13))
-    scene.cameraFollowSprite(worldSelectSprite)
+    
+    // Find all the locations of all level tiles
+    for (let tileLocation of tiles.getTilesByType(assets.tile`levelHorizontal`)) {
+        levelTilesList.push(tileLocation)
+    }
+    for (let tileLocation of tiles.getTilesByType(assets.tile`levelVertical`)) {
+        levelTilesList.push(tileLocation)
+    }
+    levelTilesList.sort(compareColumns)
+    levelTilesList.sort(compareRows)
+    console.log(levelTilesList)
+
+    if (currentLevel >= 0 && currentLevel < tilemapList.length){
+        tiles.placeOnTile(levelSelectSprite, levelTilesList[currentLevel])
+        let targetLocation: tiles.Location = tiles.getTileLocation(levelSelectSprite.tilemapLocation().column+1, levelSelectSprite.tilemapLocation().row)
+        let isVertical: boolean = false
+        if (tiles.tileAtLocationEquals(levelTilesList[currentLevel], assets.tile`levelVertical`)){
+            levelSelectSprite.setImage(img`
+            . . . . . . f f f f . . . . . .
+            . f f . . f 5 d d 5 f . . f f .
+            f d d f f d d e e d d f f d d f
+            f d d f f e e e e e e f f d d f
+            . f d d f e e e e e e f d d f .
+            . . f d f e e e e e e f d f . .
+            . . . f 4 f e e e e f 4 f . . .
+            . . . . f 4 f f f f 4 f . . . .
+            . . . . f e 4 4 4 4 e f . . . .
+            . . . f f e e e e e e f f . . .
+            . . f d d 4 e e e e 4 d d f . .
+            . . . f d 4 e e e e 4 d f . . .
+            . . . . f f f e e f f f . f . .
+            . . . . . . . f e e f . f e f .
+            . . . . . . . . f e e f e e f .
+            . . . . . . . . . f e e e f . .
+        `)
+            isVertical = true
+            targetLocation = tiles.getTileLocation(levelSelectSprite.tilemapLocation().column, levelSelectSprite.tilemapLocation().row-1)
+        }
+        activateLevelIndicatorSprites(isVertical, true, targetLocation)
+            
+        
+        
+    } else {
+        tiles.placeOnTile(levelSelectSprite, tiles.getTileLocation(0, 13))
+    }
+        
+    scene.cameraFollowSprite(levelSelectSprite)
+}
+// Helper functions to sort locations by column then row
+function compareColumns(currentLocation: tiles.Location, nextLocation: tiles.Location) {
+    if (currentLocation.column > nextLocation.column) {
+        return -1;
+    } else {
+        return 1;
+    }
+}
+function compareRows(currentLocation: tiles.Location, nextLocation: tiles.Location) {
+    if (currentLocation.row > nextLocation.row) {
+        return -1;
+    } else {
+        return 1;
+    }
 }
 
 function createPlayer(){
@@ -428,6 +493,12 @@ function createPowerUp(powerUpType: number, targetLocation: tiles.Location){
 }
 
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
+    // Testing to validate sorting criteria for world Tiles
+    // if(worldSelect){
+    //     index++
+    //     index = index % levelTilesList.length
+    //     tiles.placeOnTile(levelSelectSprite, levelTilesList[index])
+    // }
     if (jumps > 0 && !isFalling){
         isFalling = true
         playerSprite.vy = -200
@@ -436,7 +507,7 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
 })
 controller.B.onEvent(ControllerButtonEvent.Pressed, function(){
     if(worldSelect){
-        if (tiles.tileAtLocationEquals(worldSelectSprite.tilemapLocation(), assets.tile`worldHorizontal`) || tiles.tileAtLocationEquals(worldSelectSprite.tilemapLocation(), assets.tile`worldVertical`)){
+        if (tiles.tileAtLocationEquals(levelSelectSprite.tilemapLocation(), assets.tile`levelHorizontal`) || tiles.tileAtLocationEquals(levelSelectSprite.tilemapLocation(), assets.tile`levelVertical`)){
             worldSelect = false
             selectLevel()
             return
@@ -478,32 +549,32 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, function(){
 })
 
 controller.left.onEvent(ControllerButtonEvent.Pressed, function(){
-    moveWorldSelectSprite(-1, 0)
+    movelevelSelectSprite(-1, 0)
 })
 controller.right.onEvent(ControllerButtonEvent.Pressed, function () {
-    moveWorldSelectSprite(1, 0)
+    movelevelSelectSprite(1, 0)
 })
 controller.up.onEvent(ControllerButtonEvent.Pressed, function () {
-    moveWorldSelectSprite(0, -1)
+    movelevelSelectSprite(0, -1)
 })
 controller.down.onEvent(ControllerButtonEvent.Pressed, function () {
-    moveWorldSelectSprite(0, 1)
+    movelevelSelectSprite(0, 1)
 })
-function moveWorldSelectSprite(velocityX: number, velocityY: number){
+function movelevelSelectSprite(velocityX: number, velocityY: number){
     if (!worldSelect)
         return
-    if (velocityX > 0 && tiles.getTileLocation(worldSelectSprite.tilemapLocation().column + 1, worldSelectSprite.tilemapLocation().row).isWall()){
+    if (velocityX > 0 && tiles.getTileLocation(levelSelectSprite.tilemapLocation().column + 1, levelSelectSprite.tilemapLocation().row).isWall()){
         return
-    } else if (velocityX < 0 && tiles.getTileLocation(worldSelectSprite.tilemapLocation().column - 1, worldSelectSprite.tilemapLocation().row).isWall()){
+    } else if (velocityX < 0 && tiles.getTileLocation(levelSelectSprite.tilemapLocation().column - 1, levelSelectSprite.tilemapLocation().row).isWall()){
         return
-    } else if (velocityY > 0 && tiles.getTileLocation(worldSelectSprite.tilemapLocation().column, worldSelectSprite.tilemapLocation().row + 1).isWall()){
+    } else if (velocityY > 0 && tiles.getTileLocation(levelSelectSprite.tilemapLocation().column, levelSelectSprite.tilemapLocation().row + 1).isWall()){
         return
-    } else if (velocityY < 0 && tiles.getTileLocation(worldSelectSprite.tilemapLocation().column, worldSelectSprite.tilemapLocation().row - 1).isWall()){
+    } else if (velocityY < 0 && tiles.getTileLocation(levelSelectSprite.tilemapLocation().column, levelSelectSprite.tilemapLocation().row - 1).isWall()){
         return
     }
-    worldSelectSprite.setVelocity(velocityX * 50, velocityY * 50)
-    if(worldSelectSprite.vx > 0){
-        worldSelectSprite.setImage(img`
+    levelSelectSprite.setVelocity(velocityX * 50, velocityY * 50)
+    if(levelSelectSprite.vx > 0){
+        levelSelectSprite.setImage(img`
             . . . . . . . . . . . . f f . .
             . . . . . . . . . . . f d d f .
             . . . . . f . . . . f d d d f .
@@ -521,8 +592,8 @@ function moveWorldSelectSprite(velocityX: number, velocityY: number){
             . f f . . . . . . . . f d d f .
             . . . . . . . . . . . . f f . .
         `)
-    } else if (worldSelectSprite.vx < 0){
-        worldSelectSprite.setImage(img`
+    } else if (levelSelectSprite.vx < 0){
+        levelSelectSprite.setImage(img`
             . . f f . . . . . . . . . . . .
             . f d d f . . . . . . . . . . .
             . f d d d f . . . . f . . . . .
@@ -540,8 +611,8 @@ function moveWorldSelectSprite(velocityX: number, velocityY: number){
             . f d d f . . . . . . . . f f .
             . . f f . . . . . . . . . . . .
         `)
-    } else if (worldSelectSprite.vy > 0){
-        worldSelectSprite.setImage(img`
+    } else if (levelSelectSprite.vy > 0){
+        levelSelectSprite.setImage(img`
             . . f e e e f . . . . . . . . .
             . f e e f e e f . . . . . . . .
             . f e f . f e e f . . . . . . .
@@ -559,8 +630,8 @@ function moveWorldSelectSprite(velocityX: number, velocityY: number){
             . f f . . f 5 d d 5 f . . f f .
             . . . . . . f f f f . . . . . .
         `)
-    } else if (worldSelectSprite.vy < 0){
-        worldSelectSprite.setImage(img`
+    } else if (levelSelectSprite.vy < 0){
+        levelSelectSprite.setImage(img`
             . . . . . . f f f f . . . . . .
             . f f . . f 5 d d 5 f . . f f .
             f d d f f d d e e d d f f d d f
@@ -582,15 +653,29 @@ function moveWorldSelectSprite(velocityX: number, velocityY: number){
 }
 scene.onHitWall(SpriteKind.Selector, function(sprite, location){
     if(sprite.isHittingTile(CollisionDirection.Right) || sprite.isHittingTile(CollisionDirection.Left)){
-        if(tiles.tileAtLocationEquals(sprite.tilemapLocation(), assets.tile`worldHorizontal`)){
+        if(tiles.tileAtLocationEquals(sprite.tilemapLocation(), assets.tile`levelHorizontal`)){
             if (sprite.isHittingTile(CollisionDirection.Right)) {
-                level++
+                currentLevel++
             } else {
-                level--
+                currentLevel--
             }
-            tiles.setWallAt(location, false)
-            arrowSprite.setFlag(SpriteFlag.Invisible, false)
-            arrowSprite.setImage(img`
+            activateLevelIndicatorSprites(false, true, location)
+        }
+    } else if (sprite.isHittingTile(CollisionDirection.Top) || sprite.isHittingTile(CollisionDirection.Bottom)) {
+        if (tiles.tileAtLocationEquals(sprite.tilemapLocation(), assets.tile`levelVertical`)) {
+            if (sprite.isHittingTile(CollisionDirection.Top)) {
+                currentLevel++
+            } else {
+                currentLevel--
+            }
+            activateLevelIndicatorSprites(true, true, location)
+        }
+    }
+})
+function activateLevelIndicatorSprites(isVertical: boolean, isVisible: boolean, location: tiles.Location){
+    tiles.setWallAt(location, false)
+    arrowSprite.setFlag(SpriteFlag.Invisible, !isVisible)
+    arrowSprite.setImage(img`
                 . . . . . . . . . . . . . . . .
                 . . . . . . . . . . . . . . . .
                 . . . . . . . . . . . . . . . .
@@ -608,22 +693,10 @@ scene.onHitWall(SpriteKind.Selector, function(sprite, location){
                 . . . . . . . . . . . . . . . .
                 . . . . . . . . . . . . . . . .
             `)
-            sprites.setDataBoolean(arrowSprite, "worldVertical", false)
-            tiles.placeOnTile(arrowSprite, tiles.getTileLocation(worldSelectSprite.tilemapLocation().column, worldSelectSprite.tilemapLocation().row - 2))
-            sprites.setDataBoolean(arrowSprite, "isVisible", true)
-            tiles.placeOnTile(indicatorSprite, worldSelectSprite.tilemapLocation())
-            indicatorSprite.setFlag(SpriteFlag.Invisible, false)
-        }
-    } else if (sprite.isHittingTile(CollisionDirection.Top) || sprite.isHittingTile(CollisionDirection.Bottom)) {
-        if (tiles.tileAtLocationEquals(sprite.tilemapLocation(), assets.tile`worldVertical`)) {
-            if (sprite.isHittingTile(CollisionDirection.Top)) {
-                level++
-            } else {
-                level--
-            }
-            tiles.setWallAt(location, false)
-            arrowSprite.setFlag(SpriteFlag.Invisible, false)
-            arrowSprite.setImage(img`
+    sprites.setDataBoolean(arrowSprite, "levelVertical", isVertical)
+    tiles.placeOnTile(arrowSprite, tiles.getTileLocation(levelSelectSprite.tilemapLocation().column, levelSelectSprite.tilemapLocation().row - 2))
+    if(isVertical){
+        arrowSprite.setImage(img`
                 . . . . . . . . . . . . . . . .
                 . . . . . . . . . . . . . . . .
                 . . . . . . . . . . . . . . . .
@@ -641,14 +714,12 @@ scene.onHitWall(SpriteKind.Selector, function(sprite, location){
                 . . . . . . . . . . . . . . . .
                 . . . . . . . . . . . . . . . .
             `)
-            sprites.setDataBoolean(arrowSprite, "worldVertical", true)
-            tiles.placeOnTile(arrowSprite, tiles.getTileLocation(worldSelectSprite.tilemapLocation().column - 2, worldSelectSprite.tilemapLocation().row))
-            sprites.setDataBoolean(arrowSprite, "isVisible", true)
-            tiles.placeOnTile(indicatorSprite, worldSelectSprite.tilemapLocation())
-            indicatorSprite.setFlag(SpriteFlag.Invisible, false)
-        }
+        tiles.placeOnTile(arrowSprite, tiles.getTileLocation(levelSelectSprite.tilemapLocation().column - 2, levelSelectSprite.tilemapLocation().row))
     }
-})
+    sprites.setDataBoolean(arrowSprite, "isVisible", isVisible)
+    tiles.placeOnTile(indicatorSprite, levelSelectSprite.tilemapLocation())
+    indicatorSprite.setFlag(SpriteFlag.Invisible, !isVisible)
+}
 scene.onHitWall(SpriteKind.Player, function(sprite, location){
     if(sprite.isHittingTile(CollisionDirection.Bottom)){
         jumps = 1
@@ -747,6 +818,14 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`checkPointTile`, function(spr
     }
     tiles.setTileAt(location, assets.tile`spawnTile`)
 })
+// Send player back to world select once they reach the exitTile
+scene.onOverlapTile(SpriteKind.Player, assets.tile`exitTile`, function (sprite, location) {
+    worldSelect = true
+    sprite.destroy()
+    selectLevel()
+})
+
+
 
 
 // Player destroys after overlapping hazard tiles
@@ -770,8 +849,9 @@ function destroySprite(sprite: Sprite, velocityX: number, velocityY: number, cam
 }
 
 sprites.onDestroyed(SpriteKind.Player, function(sprite){
-    if(worldSelect)
+    if(worldSelect){
         return
+    }
     createPlayer()
 })
 
@@ -1870,21 +1950,21 @@ game.onUpdate(function(){
     if(!worldSelect){
         return
     }
-    for (let location of tiles.getTilesByType(assets.tile`worldHorizontal`)){
-        if(location.column < worldSelectSprite.tilemapLocation().column){
+    for (let location of tiles.getTilesByType(assets.tile`levelHorizontal`)){
+        if(location.column < levelSelectSprite.tilemapLocation().column){
             tiles.setWallAt(tiles.getTileLocation(location.column - 1, location.row), true)
-        } else if (location.column > worldSelectSprite.tilemapLocation().column){
+        } else if (location.column > levelSelectSprite.tilemapLocation().column){
             tiles.setWallAt(tiles.getTileLocation(location.column + 1, location.row), true)
         }
     }
-    for (let location of tiles.getTilesByType(assets.tile`worldVertical`)){
-        if (location.row < worldSelectSprite.tilemapLocation().row) {
+    for (let location of tiles.getTilesByType(assets.tile`levelVertical`)){
+        if (location.row < levelSelectSprite.tilemapLocation().row) {
             tiles.setWallAt(tiles.getTileLocation(location.column, location.row - 1), true)
-        } else if (location.row > worldSelectSprite.tilemapLocation().row) {
+        } else if (location.row > levelSelectSprite.tilemapLocation().row) {
             tiles.setWallAt(tiles.getTileLocation(location.column, location.row + 1), true)
         }
     }
-    if (!tiles.tileAtLocationEquals(worldSelectSprite.tilemapLocation(), assets.tile`worldHorizontal`) && !tiles.tileAtLocationEquals(worldSelectSprite.tilemapLocation(), assets.tile`worldVertical`)) {
+    if (!tiles.tileAtLocationEquals(levelSelectSprite.tilemapLocation(), assets.tile`levelHorizontal`) && !tiles.tileAtLocationEquals(levelSelectSprite.tilemapLocation(), assets.tile`levelVertical`)) {
         arrowSprite.setFlag(SpriteFlag.Invisible, true)
         sprites.setDataBoolean(arrowSprite, "isVisible", false)
         indicatorSprite.setFlag(SpriteFlag.Invisible, true)
@@ -1893,18 +1973,19 @@ game.onUpdate(function(){
     if(!sprites.readDataBoolean(arrowSprite, "isVisible")){
         return
     }
-    if (sprites.readDataBoolean(arrowSprite, "worldVertical")) {
+    if (sprites.readDataBoolean(arrowSprite, "levelVertical")) {
         arrowSprite.x += Math.sin(delta)
     } else {
         arrowSprite.y += Math.sin(delta)
     }
     delta += 0.125
     delta = delta % 100
-    // worldSelectSprite.sayText(level)
+    // levelSelectSprite.sayText(currentLevel)
 })
 
 // Game Update for Main game
 game.onUpdate(function() {
+    console.log(currentLevel)
     if(worldSelect){
         return
     }
