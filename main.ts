@@ -4,6 +4,8 @@ namespace SpriteKind {
     export const GrowPower = SpriteKind.create()
     export const Tile = SpriteKind.create()
     export const ShootPower = SpriteKind.create()
+    export const ShrinkPower = SpriteKind.create()
+    export const BatPower = SpriteKind.create()
     export const Selector = SpriteKind.create()
     export const Arrow = SpriteKind.create()
     export const Indicator = SpriteKind.create()
@@ -22,6 +24,7 @@ let index: number = 0
 
 let isFalling: boolean = false
 let levelSelect: boolean = false
+
 let tilemapList: tiles.TileMapData[] = [
     tilemap`level1`,
     tilemap`level2`,
@@ -458,6 +461,7 @@ function resetPlayerPowerups(){
     playerSprite.scale = 1
     sprites.setDataBoolean(playerSprite, "GrowPower", false)
     sprites.setDataBoolean(playerSprite, "ShootPower", false)
+    sprites.setDataBoolean(playerSprite, "ShrinkPower", false)
 }
 // Powerup Object
 let powerUpObject = {
@@ -498,12 +502,56 @@ let powerUpObject = {
             . . . . . . . . 7 . . . . . . .
             . . . . . . . . . . . . . . . .
         `,
+        img`
+            ....................
+            ....................
+            ....................
+            ....................
+            ....................
+            ....................
+            .........bb.........
+            ........cccc........
+            ........cccc........
+            .........ff.........
+            .........cf.........
+            .........cc.........
+            ........c66c........
+            .......c7766c.......
+            .......c7666c.......
+            .......c6666c.......
+            .......cc66cf.......
+            ........cfff........
+            ....................
+            ....................
+        `,
+        img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . b b . . . . . . .
+            . . . . . . c c c c . . . . . .
+            . . . . . . c c c c . . . . . .
+            . f . . . . . f f . . . . . f .
+            . f f . . . . b f . . . . f f .
+            . 2 f f . . . b b . . . f f 2 .
+            . f f 2 f f b b b b f f 2 f f .
+            . . f f f b b 2 2 b b f f f . .
+            . . . f 2 b 2 2 2 2 b 2 f . . .
+            . . . . f b 2 2 2 2 b f . . . .
+            . . . . . b 2 2 2 2 c . . . . .
+            . . . . . . c c c c . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+        `,
         ],
     "kind" : [
         SpriteKind.GrowPower,
         SpriteKind.ShootPower,
+        SpriteKind.ShrinkPower,
+        SpriteKind.BatPower,
     ],
     "scale" : [
+        0.75,
+        0.75,
         0.75,
         0.75,
     ]
@@ -513,7 +561,7 @@ function createPowerUp(powerUpType: number, targetLocation: tiles.Location){
     let powerUpSprite: Sprite = sprites.create(powerUpObject["image"][powerUpType], powerUpObject["kind"][powerUpType])
     powerUpSprite.scale = powerUpObject["scale"][powerUpType]
     powerUpSprite.ay = 300
-    powerUpSprite.setVelocity(Math.randomRange(-50, -25), -100)
+    powerUpSprite.setVelocity(Math.randomRange(-75, 75), -100)
     sprites.setDataNumber(powerUpSprite, "speed", powerUpSprite.vx)
     tiles.placeOnTile(powerUpSprite, targetLocation)
 }
@@ -527,8 +575,12 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
     // }
     if (jumps > 0 && !isFalling){
         isFalling = true
-        playerSprite.vy = -200
         jumps -= 1
+        if(sprites.readDataBoolean(playerSprite, "ShrinkPower")){
+            playerSprite.vy = -250
+            return
+        }
+        playerSprite.vy = -200
     }
 })
 controller.B.onEvent(ControllerButtonEvent.Pressed, function(){
@@ -757,6 +809,12 @@ function activateLevelIndicatorSprites(isVertical: boolean, isVisible: boolean, 
     tiles.placeOnTile(indicatorSprite, levelSelectSprite.tilemapLocation())
     indicatorSprite.setFlag(SpriteFlag.Invisible, !isVisible)
 }
+scene.onHitWall(SpriteKind.Projectile, function(sprite, location){
+    if(tiles.tileAtLocationEquals(location, assets.tile`vineTile`)){
+        destroyTile(assets.tile`vineTile`, location, effects.fire, 0)
+        sprite.destroy()
+    }
+})
 scene.onHitWall(SpriteKind.Player, function(sprite, location){
     if(sprite.isHittingTile(CollisionDirection.Bottom)){
         jumps = 1
@@ -792,7 +850,7 @@ scene.onHitWall(SpriteKind.Player, function(sprite, location){
         }
         if (tiles.tileAtLocationEquals(location, assets.tile`stoneUnbreakable`)){
             if(sprites.readDataBoolean(sprite, "GrowPower")){
-                destroyTile(assets.tile`stoneUnbreakable`, location, effects.disintegrate)
+                destroyTile(assets.tile`stoneUnbreakable`, location, effects.disintegrate, -50)
             } else if(Math.randomRange(1, 100) < 5){
                 let targetLocation: tiles.Location = tiles.getTileLocation(location.column, location.row - 1)
                 createCollectible(targetLocation)
@@ -820,7 +878,7 @@ scene.onHitWall(SpriteKind.Player, function(sprite, location){
     }
 })
 
-function destroyTile(tileImage: Image, targetLocation: tiles.Location, effectType: effects.ParticleEffect){
+function destroyTile(tileImage: Image, targetLocation: tiles.Location, effectType: effects.ParticleEffect, velocityY: number){
     let tileSprite = sprites.create(tileImage, SpriteKind.Tile)
     tiles.setTileAt(targetLocation, img`
         . . . . . . . . . . . . . . . .
@@ -842,7 +900,7 @@ function destroyTile(tileImage: Image, targetLocation: tiles.Location, effectTyp
     `)
     tiles.setWallAt(targetLocation, false)
     tiles.placeOnTile(tileSprite, targetLocation)
-    tileSprite.vy = -50
+    tileSprite.vy = velocityY
     tileSprite.destroy(effectType, 150)
 
 }
@@ -862,6 +920,13 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`exitTile`, function (sprite, 
     onStart()
 })
 
+// Destroy power ups when they enter the lava
+scene.onOverlapTile(SpriteKind.GrowPower, assets.tile`lavaTile`, function (sprite, location) {
+    sprite.destroy()
+})
+scene.onOverlapTile(SpriteKind.ShootPower, assets.tile`lavaTile`, function (sprite, location) {
+    sprite.destroy()
+})
 
 
 
@@ -878,8 +943,11 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`rightHazardTile`, function (s
 scene.onOverlapTile(SpriteKind.Player, assets.tile`leftHazardTile`, function (sprite, location) {
     destroySprite(sprite, 70, 0, 8)
 })
+scene.onOverlapTile(SpriteKind.Player, assets.tile`lavaTile`, function (sprite, location) {
+    destroySprite(sprite, 0, -70, 8)
+})
 function destroySprite(sprite: Sprite, velocityX: number, velocityY: number, cameraShakeStrength: number){
-    sprite.vx = 70
+    sprite.setVelocity(velocityX, velocityY)
     sprite.setFlag(SpriteFlag.Ghost, true)
     sprites.destroy(sprite, effects.none, 1000)
     scene.cameraShake(cameraShakeStrength, 500)
@@ -1878,6 +1946,7 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Collectible, function(sprite, ot
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.GrowPower, function(sprite, otherSprite){
     otherSprite.destroy()
+    resetPlayerPowerups()
     if(sprites.readDataBoolean(sprite, "GrowPower")){
         return
     }
@@ -1885,8 +1954,19 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.GrowPower, function(sprite, othe
     sprite.scale = 1.5
     sprite.vy = -100
 })
+sprites.onOverlap(SpriteKind.Player, SpriteKind.ShrinkPower, function (sprite, otherSprite) {
+    otherSprite.destroy()
+    resetPlayerPowerups()
+    if (sprites.readDataBoolean(sprite, "ShrinkPower")) {
+        return
+    }
+    sprites.setDataBoolean(sprite, "ShrinkPower", true)
+    sprite.scale = 0.5
+    sprite.vy = -100
+})
 sprites.onOverlap(SpriteKind.Player, SpriteKind.ShootPower, function (sprite, otherSprite) {
     otherSprite.destroy()
+    resetPlayerPowerups()
     if (sprites.readDataBoolean(sprite, "ShootPower")) {
         return
     }
@@ -2034,21 +2114,11 @@ game.onUpdate(function() {
         if (powerUp.isHittingTile(CollisionDirection.Left) || powerUp.isHittingTile(CollisionDirection.Right)) {
             powerUp.vx = -sprites.readDataNumber(powerUp, "speed")
         }
-        // if (powerUp.isHittingTile(CollisionDirection.Left)){
-        //     powerUp.vx = Math.randomRange(25, 50)
-        // } else if (powerUp.isHittingTile(CollisionDirection.Right)){
-        //     powerUp.vx = Math.randomRange(-50, -25)
-        // }
     }
     for (let powerUp of sprites.allOfKind(SpriteKind.ShootPower)) {
         if (powerUp.isHittingTile(CollisionDirection.Left) || powerUp.isHittingTile(CollisionDirection.Right)){
             powerUp.vx = -sprites.readDataNumber(powerUp, "speed")
         }
-        // if (powerUp.isHittingTile(CollisionDirection.Left)) {
-        //     powerUp.vx = Math.randomRange(25, 50)
-        // } else if (powerUp.isHittingTile(CollisionDirection.Right)) {
-        //     powerUp.vx = Math.randomRange(-50, -25)
-        // }
     }
     // playerSprite.sayText(isFalling)
     if(tiles.getTilesByType(assets.tile`luckyTile`).length <= 0) {
