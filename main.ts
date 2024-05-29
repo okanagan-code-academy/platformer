@@ -12,6 +12,8 @@ namespace SpriteKind {
 }
 
 let currentLevel: number = -1
+let maxLevel : number = 0
+let currentWorld: number = 0
 let previousLevelLocation: tiles.Location
 let jumps: number = 0
 let delta: number = 0
@@ -25,13 +27,15 @@ let index: number = 0
 let isFalling: boolean = false
 let levelSelect: boolean = false
 
-let tilemapList: tiles.TileMapData[] = [
-    tilemap`level1`,
-    tilemap`level2`,
-    tilemap`level3`,
-    tilemap`level4`,
-    tilemap`level5`,
-    tilemap`level6`
+let worldLevelsList: tiles.TileMapData[][] = [
+        [
+            tilemap`level1`,
+            tilemap`level2`,
+            tilemap`level3`,
+            tilemap`level4`,
+            tilemap`level5`,
+            tilemap`level6`,
+        ],
     ]
 
 info.setScore(0)
@@ -48,10 +52,10 @@ function onStart() {
         return
     }
     scene.setBackgroundColor(9)
-    if (currentLevel < 0 || currentLevel >= tilemapList.length) {
+    if (currentLevel < 0 || currentLevel >= worldLevelsList[0].length) {
         tiles.setTilemap(tilemap`test`)
     } else {
-        tiles.setTilemap(tilemapList[currentLevel])
+        tiles.setTilemap(worldLevelsList[currentWorld][currentLevel])
     }
     createCollectiblesOnTilemap()
     createPlayer()
@@ -356,7 +360,7 @@ function createLevelSelect(){
     console.log(levelTilesList)
 
     
-    if (currentLevel >= 0 && currentLevel < tilemapList.length){
+    if (currentLevel >= 0 && currentLevel < worldLevelsList.length){
         tiles.placeOnTile(levelSelectSprite, levelTilesList[currentLevel])
         let targetLocation: tiles.Location = tiles.getTileLocation(levelSelectSprite.tilemapLocation().column+1, levelSelectSprite.tilemapLocation().row)
         let isVertical: boolean = false
@@ -561,7 +565,7 @@ function createPowerUp(powerUpType: number, targetLocation: tiles.Location){
     let powerUpSprite: Sprite = sprites.create(powerUpObject["image"][powerUpType], powerUpObject["kind"][powerUpType])
     powerUpSprite.scale = powerUpObject["scale"][powerUpType]
     powerUpSprite.ay = 300
-    powerUpSprite.setVelocity(Math.randomRange(-75, 75), -100)
+    powerUpSprite.setVelocity(Math.randomRange(-50, 50), -100)
     sprites.setDataNumber(powerUpSprite, "speed", powerUpSprite.vx)
     tiles.placeOnTile(powerUpSprite, targetLocation)
 }
@@ -732,7 +736,6 @@ function movelevelSelectSprite(velocityX: number, velocityY: number){
 scene.onHitWall(SpriteKind.Selector, function(sprite, location){
     if(sprite.isHittingTile(CollisionDirection.Right) || sprite.isHittingTile(CollisionDirection.Left)){
         if(tiles.tileAtLocationEquals(sprite.tilemapLocation(), assets.tile`levelHorizontal`)){
-            activateLevelIndicatorSprites(false, true, location)
             if (sprite.tilemapLocation().column == previousLevelLocation.column && sprite.tilemapLocation().row == previousLevelLocation.row){
                 return
             }
@@ -742,10 +745,10 @@ scene.onHitWall(SpriteKind.Selector, function(sprite, location){
                 currentLevel--
             }
             previousLevelLocation = sprite.tilemapLocation()
+            activateLevelIndicatorSprites(false, true, location)
         }
     } else if (sprite.isHittingTile(CollisionDirection.Top) || sprite.isHittingTile(CollisionDirection.Bottom)) {
         if (tiles.tileAtLocationEquals(sprite.tilemapLocation(), assets.tile`levelVertical`)) {
-            activateLevelIndicatorSprites(true, true, location)
             if (sprite.tilemapLocation().column == previousLevelLocation.column && sprite.tilemapLocation().row == previousLevelLocation.row) {
                 return
             }
@@ -755,12 +758,14 @@ scene.onHitWall(SpriteKind.Selector, function(sprite, location){
                 currentLevel--
             }
             previousLevelLocation = sprite.tilemapLocation()
+            activateLevelIndicatorSprites(true, true, location)
             
         }
     }
 })
 function activateLevelIndicatorSprites(isVertical: boolean, isVisible: boolean, location: tiles.Location){
-    tiles.setWallAt(location, false)
+    if(currentLevel < maxLevel)
+        tiles.setWallAt(location, false)
     arrowSprite.setFlag(SpriteFlag.Invisible, !isVisible)
     arrowSprite.setImage(img`
                 . . . . . . . . . . . . . . . .
@@ -916,6 +921,7 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`checkPointTile`, function(spr
 // Send player back to world select once they reach the exitTile
 scene.onOverlapTile(SpriteKind.Player, assets.tile`exitTile`, function (sprite, location) {
     levelSelect = true
+    maxLevel = currentLevel+1
     sprite.destroy()
     onStart()
 })
@@ -1972,6 +1978,18 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.ShootPower, function (sprite, ot
     }
     sprites.setDataBoolean(sprite, "ShootPower", true)
 })
+sprites.onOverlap(SpriteKind.Player, SpriteKind.ShootPower, function (sprite, otherSprite) {
+    otherSprite.destroy()
+    resetPlayerPowerups()
+    if (sprites.readDataBoolean(sprite, "BatPower")) {
+        return
+    }
+    sprites.setDataBoolean(sprite, "BatPower", true)
+    batPower()
+})
+function batPower(){
+    
+}
 
 function createCollectiblesOnTilemap(){
     for(let tileLocation of tiles.getTilesByType(assets.tile`collectibleSpawn`)){
