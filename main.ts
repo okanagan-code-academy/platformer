@@ -14,6 +14,7 @@ namespace SpriteKind {
 let currentLevel: number = -1
 let maxLevel : number = 0
 let currentWorld: number = 0
+let maxWorld : number = 0
 let previousLevelLocation: tiles.Location
 let jumps: number = 0
 let delta: number = 0
@@ -21,11 +22,11 @@ let playerSprite: Sprite = null
 let levelSelectSprite: Sprite = null
 let arrowSprite: Sprite = null
 let indicatorSprite: Sprite = null
-let levelTilesList: tiles.Location[] = []
+let levelTileLocationsList: tiles.Location[] = []
 let index: number = 0
 
 let isFalling: boolean = false
-let levelSelect: boolean = false
+let levelSelect: boolean = true
 
 let worldLevelsList: tiles.TileMapData[][] = [
         [
@@ -66,7 +67,7 @@ function createEnemy(enemyType: number, tileLocation: tiles.Location){
     tiles.placeOnTile(enemySprite, tileLocation)
 
 }
-function generateEnemyOnTilemap(){
+function generateTilemapEnemies(){
     for(let tileLocation of tiles.getTilesByType(assets.tile`enemySpawnTile`)){
         createEnemy(0, tileLocation)
         tiles.setTileAt(tileLocation, img`
@@ -106,8 +107,8 @@ function onStart() {
     } else {
         tiles.setTilemap(worldLevelsList[currentWorld][currentLevel])
     }
-    generateEnemyOnTilemap()
-    createCollectiblesOnTilemap()
+    generateTilemapEnemies()
+    generateTilemapCollectibles()
     createPlayer()
 }
 onStart()
@@ -397,24 +398,24 @@ function createLevelSelect(){
     indicatorSprite.setFlag(SpriteFlag.Invisible, true)
     tiles.setTilemap(tilemap`world1`)
     
-    levelTilesList = []
+    levelTileLocationsList = []
     // Find all the locations of all level tiles
     for (let tileLocation of tiles.getTilesByType(assets.tile`levelHorizontal`)) {
-        levelTilesList.push(tileLocation)
+        levelTileLocationsList.push(tileLocation)
     }
     for (let tileLocation of tiles.getTilesByType(assets.tile`levelVertical`)) {
-        levelTilesList.push(tileLocation)
+        levelTileLocationsList.push(tileLocation)
     }
-    levelTilesList.sort(compareColumns)
-    levelTilesList.sort(compareRows)
-    // console.log(levelTilesList)
+    levelTileLocationsList.sort(compareColumns)
+    levelTileLocationsList.sort(compareRows)
+    // console.log(levelTileLocationsList)
 
     
-    if (currentLevel >= 0 && currentLevel < worldLevelsList.length){
-        tiles.placeOnTile(levelSelectSprite, levelTilesList[currentLevel])
+    if (currentLevel >= 0 && currentLevel < worldLevelsList[currentWorld].length){
+        tiles.placeOnTile(levelSelectSprite, levelTileLocationsList[currentLevel])
         let targetLocation: tiles.Location = tiles.getTileLocation(levelSelectSprite.tilemapLocation().column+1, levelSelectSprite.tilemapLocation().row)
         let isVertical: boolean = false
-        if (tiles.tileAtLocationEquals(levelTilesList[currentLevel], assets.tile`levelVertical`)){
+        if (tiles.tileAtLocationEquals(levelTileLocationsList[currentLevel], assets.tile`levelVertical`)){
             levelSelectSprite.setImage(img`
             . . . . . . f f f f . . . . . .
             . f f . . f 5 d d 5 f . . f f .
@@ -443,7 +444,7 @@ function createLevelSelect(){
     }
     previousLevelLocation = levelSelectSprite.tilemapLocation()
     
-    for(let tileLocation of levelTilesList){
+    for(let tileLocation of levelTileLocationsList){
         let wallLocation: tiles.Location = tileLocation
         if(tiles.tileAtLocationEquals(tileLocation, assets.tile`levelHorizontal`)){
             if (tileLocation.column < levelSelectSprite.tilemapLocation().column) {
@@ -509,6 +510,8 @@ function createPlayer(){
     tiles.placeOnRandomTile(playerSprite, assets.tile`spawnTile`)
 }
 function resetPlayerPowerups(){
+    // stop any timers
+    info.stopCountdown()
     // Reset player attributes
     playerSprite.scale = 1
     playerSprite.ay = 300
@@ -637,8 +640,8 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
     // Testing to validate sorting criteria for world Tiles
     // if(levelSelect){
     //     index++
-    //     index = index % levelTilesList.length
-    //     tiles.placeOnTile(levelSelectSprite, levelTilesList[index])
+    //     index = index % levelTileLocationsList.length
+    //     tiles.placeOnTile(levelSelectSprite, levelTileLocationsList[index])
     // }
     if (jumps > 0 && !isFalling && !sprites.readDataBoolean(playerSprite, "BatPower")){
         isFalling = true
@@ -657,6 +660,10 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, function(){
             onStart()
             return
         }
+    }
+    if(sprites.readDataBoolean(playerSprite, "BatPower")){
+        batPower()
+        info.startCountdown(10)
     }
     if(sprites.readDataBoolean(playerSprite, "ShootPower")){
         let projectileSprite: Sprite = sprites.create(img`
@@ -693,6 +700,10 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, function(){
     }
 })
 
+info.onCountdownEnd(function(){
+    resetPlayerPowerups()
+    sprites.setDataBoolean(playerSprite, "BatPower", true)
+})
 controller.left.onEvent(ControllerButtonEvent.Pressed, function(){
     movelevelSelectSprite(-1, 0)
 })
@@ -800,6 +811,7 @@ scene.onHitWall(SpriteKind.Selector, function(sprite, location){
     if(sprite.isHittingTile(CollisionDirection.Right) || sprite.isHittingTile(CollisionDirection.Left)){
         if(tiles.tileAtLocationEquals(sprite.tilemapLocation(), assets.tile`levelHorizontal`)){
             if (sprite.tilemapLocation().column == previousLevelLocation.column && sprite.tilemapLocation().row == previousLevelLocation.row){
+                activateLevelIndicatorSprites(false, true, location)
                 return
             }
             if (sprite.isHittingTile(CollisionDirection.Right)) {
@@ -813,6 +825,7 @@ scene.onHitWall(SpriteKind.Selector, function(sprite, location){
     } else if (sprite.isHittingTile(CollisionDirection.Top) || sprite.isHittingTile(CollisionDirection.Bottom)) {
         if (tiles.tileAtLocationEquals(sprite.tilemapLocation(), assets.tile`levelVertical`)) {
             if (sprite.tilemapLocation().column == previousLevelLocation.column && sprite.tilemapLocation().row == previousLevelLocation.row) {
+                activateLevelIndicatorSprites(true, true, location)
                 return
             }
             if (sprite.isHittingTile(CollisionDirection.Top)) {
@@ -2053,10 +2066,8 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.BatPower, function (sprite, othe
         return
     }
     sprites.setDataBoolean(sprite, "BatPower", true)
-    batPower()
 })
 function batPower(){
-    
     createBatAnimations()
     controller.moveSprite(playerSprite, 100, 100)
     playerSprite.ay = 0
@@ -2659,7 +2670,7 @@ function createBatAnimations(){
     ], 100, characterAnimations.rule(Predicate.NotMoving, Predicate.FacingLeft, Predicate.HittingWallDown))
 
 }
-function createCollectiblesOnTilemap(){
+function generateTilemapCollectibles(){
     for(let tileLocation of tiles.getTilesByType(assets.tile`collectibleSpawn`)){
         createCollectible(tileLocation)
         tiles.setTileAt(tileLocation, img`
@@ -2753,7 +2764,7 @@ game.onUpdate(function(){
     if(!levelSelect){
         return
     }
-    levelSelectSprite.sayText(currentLevel)
+    // levelSelectSprite.sayText(currentLevel)
     if (!tiles.tileAtLocationEquals(levelSelectSprite.tilemapLocation(), assets.tile`levelHorizontal`) && !tiles.tileAtLocationEquals(levelSelectSprite.tilemapLocation(), assets.tile`levelVertical`)) {
         for (let location of tiles.getTilesByType(assets.tile`levelHorizontal`)) {
             if (location.column < levelSelectSprite.tilemapLocation().column) {
