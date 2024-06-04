@@ -17,6 +17,7 @@ let currentWorld: number = 0
 let maxWorld : number = 0
 let previousLevelLocation: tiles.Location
 let jumps: number = 0
+let isFlying: boolean = false
 let delta: number = 0
 let playerSprite: Sprite = null
 let levelSelectSprite: Sprite = null
@@ -26,7 +27,7 @@ let levelTileLocationsList: tiles.Location[] = []
 let index: number = 0
 
 let isFalling: boolean = false
-let levelSelect: boolean = true
+let levelSelect: boolean = false
 
 let worldLevelsList: tiles.TileMapData[][] = [
         [
@@ -525,6 +526,7 @@ function resetPlayerPowerups(){
     sprites.setDataBoolean(playerSprite, "ShootPower", false)
     sprites.setDataBoolean(playerSprite, "ShrinkPower", false)
     sprites.setDataBoolean(playerSprite, "BatPower", false)
+    isFlying = false
 }
 // Powerup Object
 let powerUpObject = {
@@ -643,7 +645,7 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
     //     index = index % levelTileLocationsList.length
     //     tiles.placeOnTile(levelSelectSprite, levelTileLocationsList[index])
     // }
-    if (jumps > 0 && !isFalling && !sprites.readDataBoolean(playerSprite, "BatPower")){
+    if (jumps > 0 && !isFalling && !isFlying){
         isFalling = true
         jumps -= 1
         if(sprites.readDataBoolean(playerSprite, "ShrinkPower")){
@@ -661,9 +663,10 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, function(){
             return
         }
     }
-    if(sprites.readDataBoolean(playerSprite, "BatPower")){
+    if(sprites.readDataBoolean(playerSprite, "BatPower") && !isFlying){
         batPower()
         info.startCountdown(10)
+        isFlying = true
     }
     if(sprites.readDataBoolean(playerSprite, "ShootPower")){
         let projectileSprite: Sprite = sprites.create(img`
@@ -699,10 +702,16 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, function(){
         }
     }
 })
-
+function batPower() {
+    createBatAnimations()
+    controller.moveSprite(playerSprite, 100, 100)
+    playerSprite.ay = 0
+}
 info.onCountdownEnd(function(){
     resetPlayerPowerups()
-    sprites.setDataBoolean(playerSprite, "BatPower", true)
+    timer.after(10000, function() {
+        sprites.setDataBoolean(playerSprite, "BatPower", true)
+    })
 })
 controller.left.onEvent(ControllerButtonEvent.Pressed, function(){
     movelevelSelectSprite(-1, 0)
@@ -1004,18 +1013,22 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`exitTile`, function (sprite, 
 
 // Destroy power ups when they enter the lava
 scene.onOverlapTile(SpriteKind.GrowPower, assets.tile`lavaTile`, function (sprite, location) {
-    sprite.destroy()
+    sprite.destroy(effects.fire)
 })
 scene.onOverlapTile(SpriteKind.ShootPower, assets.tile`lavaTile`, function (sprite, location) {
-    sprite.destroy()
+    sprite.destroy(effects.fire)
 })
 scene.onOverlapTile(SpriteKind.ShrinkPower, assets.tile`lavaTile`, function (sprite, location) {
-    sprite.destroy()
+    sprite.destroy(effects.fire)
 })
 scene.onOverlapTile(SpriteKind.BatPower, assets.tile`lavaTile`, function (sprite, location) {
-    sprite.destroy()
+    sprite.destroy(effects.fire)
 })
 
+// Enemy destroyes upon overlapping lava tile
+scene.onOverlapTile(SpriteKind.Enemy, assets.tile`lava`, function(sprite, location){
+    sprite.destroy(effects.fire)
+})
 
 // Player destroys after overlapping hazard tiles
 scene.onOverlapTile(SpriteKind.Player, assets.tile`bottomHazardTile`, function(sprite, location){
@@ -2025,12 +2038,27 @@ function createPlayerJumpingAnimation(){
     ], 100, characterAnimations.rule(Predicate.Moving, Predicate.FacingRight))
 }
 
-
+// player and enemy overlap events
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Collectible, function(sprite, otherSprite){
     sprites.destroy(otherSprite)
     info.changeScoreBy(5)
     music.play(music.melodyPlayable(music.baDing), music.PlaybackMode.UntilDone)
 })
+sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function(sprite, otherSprite){
+    otherSprite.vy = -100
+    otherSprite.destroy(effects.disintegrate, 1000)
+    sprite.destroy(effects.fire, 100)
+})
+sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function(sprite, otherSprite){
+    if(sprite.bottom < otherSprite.y){
+        sprite.vy = -100
+        otherSprite.destroy(effects.disintegrate, 1000)
+    } else {
+        destroySprite(sprite, 0, -70, 8)
+    }
+})
+
+// Power up overlap events
 sprites.onOverlap(SpriteKind.Player, SpriteKind.GrowPower, function(sprite, otherSprite){
     otherSprite.destroy()
     resetPlayerPowerups()
@@ -2066,12 +2094,9 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.BatPower, function (sprite, othe
         return
     }
     sprites.setDataBoolean(sprite, "BatPower", true)
+
 })
-function batPower(){
-    createBatAnimations()
-    controller.moveSprite(playerSprite, 100, 100)
-    playerSprite.ay = 0
-}
+
 function createBatAnimations(){
     // Moving animations
     characterAnimations.loopFrames(playerSprite, [
@@ -2815,12 +2840,25 @@ game.onUpdate(function() {
     changeDirectionX(SpriteKind.Enemy)
 
 
-    // playerSprite.sayText(isFalling)
     if(tiles.getTilesByType(assets.tile`luckyTile`).length <= 0) {
         tiles.setTileAt(tiles.getTilesByType(assets.tile`depletedTile`)._pickRandom(), assets.tile`luckyTile`)
     }
 
 })
+game.onUpdateInterval(1000, function() {
+    if (levelSelect) {
+        return
+    }
+    // Making enemies jump
+    spriteJump(SpriteKind.Enemy)
+})
+function spriteJump(spriteType: number){
+    for(let sprite of sprites.allOfKind(spriteType)){
+        if (Math.randomRange(1, 100) < 10){
+            sprite.vy = Math.randomRange(-50, -100)
+        }
+    }
+}
 function changeDirectionX(spriteType: number){
     for (let sprite of sprites.allOfKind(spriteType)) {
         if (sprite.isHittingTile(CollisionDirection.Left) || sprite.isHittingTile(CollisionDirection.Right)) {
