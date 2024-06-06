@@ -41,21 +41,153 @@ let worldLevelsList: tiles.TileMapData[][] = [
     ]
 
 info.setScore(0)
+let airEnemyObject = {
+    "imgae" : [
+        assets.image`drone`,
+    ],
+    "heatlh" : [1, ],
+    "animations" : [
+        [
+            img``,
+        ],
+        [
+            img``,
+        ]
+    ]
+}
 
-let enemyObject = {
+let groundEnemyObject = {
     "image" : [
         assets.image`zooKeeper`,
     ],
-    "heatlh": [
-        1,
-    ],
+    "heatlh": [1,],
+    "animations" : [
+        [
+            img`
+                . . . f f f f f . . . .
+                . . f e e e e e f f . .
+                . f e e e e e e e f f .
+                f e e e e e e e f f f f
+                f e e 4 e e e f f f f f
+                f e e 4 4 e e e f f f f
+                f f e 4 4 4 4 4 f f f f
+                f f e 4 4 f f 4 e 4 f f
+                . f f d d d d 4 d 4 f .
+                . . f b b d d 4 f f f .
+                . . f e 4 4 4 e e f . .
+                . . f 1 1 1 e d d 4 . .
+                . . f 1 1 1 e d d e . .
+                . . f 6 6 6 f e e f . .
+                . . . f f f f f f . . .
+                . . . . . f f f . . . .
+            `, 
+            img`
+                . . . . . . . . . . . .
+                . . . f f f f f f . . .
+                . . f e e e e e f f f .
+                . f e e e e e e e f f f
+                f e e e e e e e f f f f
+                f e e 4 e e e f f f f f
+                f e e 4 4 e e e f f f f
+                f f e 4 4 4 4 4 f f f f
+                . f e 4 4 f f 4 e 4 f f
+                . . f d d d d 4 d 4 f .
+                . . f b b d e e f f f .
+                . . f e 4 e d d 4 f . .
+                . . f 1 1 e d d e f . .
+                . f f 6 6 f e e f f f .
+                . f f f f f f f f f f .
+                . . f f f . . . f f . .
+            `, 
+            img`
+                . . . . . . . . . . . .
+                . . . f f f f f f . . .
+                . . f e e e e e f f f .
+                . f e e e e e e e f f f
+                f e e e e e e e f f f f
+                f e e 4 e e e f f f f f
+                f e e 4 4 e e e f f f f
+                f f e 4 4 4 4 4 f f f f
+                . f e 4 4 f f 4 e 4 f f
+                . . f d d d d 4 d 4 f f
+                . . f b b d d 4 f f f .
+                . . f e 4 4 4 e d d 4 .
+                . . f 1 1 1 1 e d d e .
+                . f f 6 6 6 6 f e e f .
+                . f f f f f f f f f f .
+                . . f f f . . . f f . .
+            `
+        ],
+        [
+            img`
+                . . . . f f f f f . . .
+                . . f f e e e e e f . .
+                . f f e e e e e e e f .
+                f f f f e e e e e e e f
+                f f f f f e e e 4 e e f
+                f f f f e e e 4 4 e e f
+                f f f f 4 4 4 4 4 e f f
+                f f 4 e 4 f f 4 4 e f f
+                . f 4 d 4 d d d d f f .
+                . f f f 4 d d b b f . .
+                . . f e e 4 4 4 e f . .
+                . . 4 d d e 1 1 1 f . .
+                . . e d d e 1 1 1 f . .
+                . . f e e f 6 6 6 f . .
+                . . . f f f f f f . . .
+                . . . . f f f . . . . .
+            `,
+            img`
+                . . . . . . . . . . . .
+                . . . f f f f f f . . .
+                . f f f e e e e e f . .
+                f f f e e e e e e e f .
+                f f f f e e e e e e e f
+                f f f f f e e e 4 e e f
+                f f f f e e e 4 4 e e f
+                f f f f 4 4 4 4 4 e f f
+                f f 4 e 4 f f 4 4 e f .
+                . f 4 d 4 d d d d f . .
+                . f f f e e d b b f . .
+                . . f 4 d d e 4 e f . .
+                . . f e d d e 1 1 f . .
+                . f f f e e f 6 6 f f .
+                . f f f f f f f f f f .
+                . . f f . . . f f f . .
+            `,
+            img`
+                . . . . . . . . . . . .
+                . . . f f f f f f . . .
+                . f f f e e e e e f . .
+                f f f e e e e e e e f .
+                f f f f e e e e e e e f
+                f f f f f e e e 4 e e f
+                f f f f e e e 4 4 e e f
+                f f f f 4 4 4 4 4 e f f
+                f f 4 e 4 f f 4 4 e f .
+                f f 4 d 4 d d d d f . .
+                . f f f 4 d d b b f . .
+                . 4 d d e 4 4 4 e f . .
+                . e d d e 1 1 1 1 f . .
+                . f e e f 6 6 6 6 f f .
+                . f f f f f f f f f f .
+                . . f f . . . f f f . .
+            `
+        ]
+    ]
 }
-function createEnemy(enemyType: number, tileLocation: tiles.Location){
-    if(enemyType > enemyObject["image"].length && enemyType < 0){
-        console.log("Invalid enemy type! :(")
-        return
+function createEnemyAnimations(animationList: Image[][], sprite: Sprite){
+    // A for loop that sets animations based on left, right, up, and down
+    let animationDirection = [Predicate.MovingLeft, Predicate.MovingRight, Predicate.MovingUp, Predicate.MovingDown]
+    let count: number = 0
+    for(let currentAnimation of animationList){
+        characterAnimations.loopFrames(sprite, currentAnimation, 100, animationDirection[count])
+        count += 1
     }
-    let enemySprite = sprites.create(enemyObject["image"][enemyType], SpriteKind.Enemy)
+}
+function createGroundEnemy(tileLocation: tiles.Location){
+    
+    let enemySprite = sprites.create(groundEnemyObject["image"][0], SpriteKind.Enemy)
     enemySprite.ay = 300
     let directionX: number = 0
     if(Math.randomRange(-1, 1) < 0){
@@ -65,12 +197,28 @@ function createEnemy(enemyType: number, tileLocation: tiles.Location){
     }
     enemySprite.setVelocity(directionX*Math.randomRange(25, 40), 0)
     sprites.setDataNumber(enemySprite, "speed", enemySprite.vx)
+    sprites.setDataString(enemySprite, "type", "ground")
+    tiles.placeOnTile(enemySprite, tileLocation)
+    createEnemyAnimations(groundEnemyObject["animations"], enemySprite)
+}
+function createAirEnemy(tileLocation: tiles.Location){
+    let enemySprite = sprites.create(airEnemyObject["imgae"][0], SpriteKind.Enemy)
+    sprites.setDataString(enemySprite, "type", "air")
     tiles.placeOnTile(enemySprite, tileLocation)
 
+    spriteutils.onSpriteUpdateInterval(enemySprite, 2000, function(sprite){
+        
+        let playerSpriteReference = spriteutils.getSpritesWithin(SpriteKind.Player, 64, sprite)
+        if(playerSpriteReference.length > 0){
+            sprite.follow(playerSpriteReference[0], 20)
+        } else {
+            spriteutils.moveTo(sprite, spriteutils.pos(sprite.x + Math.randomRange(-50, 50), sprite.y), 1000)
+        }
+    })
 }
 function generateTilemapEnemies(){
-    for(let tileLocation of tiles.getTilesByType(assets.tile`enemySpawnTile`)){
-        createEnemy(0, tileLocation)
+    for(let tileLocation of tiles.getTilesByType(assets.tile`groundEnemySpawnTile`)){
+        createGroundEnemy(tileLocation)
         tiles.setTileAt(tileLocation, img`
             . . . . . . . . . . . . . . . .
             . . . . . . . . . . . . . . . .
@@ -90,6 +238,28 @@ function generateTilemapEnemies(){
             . . . . . . . . . . . . . . . .
         `)
     }
+    for (let tileLocation of tiles.getTilesByType(assets.tile`airEnemySpawnTile`)) {
+        createAirEnemy(tileLocation)
+        tiles.setTileAt(tileLocation, img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+        `)
+    }
+
 }
 function onStart() {
     sprites.destroyAllSpritesOfKind(SpriteKind.Collectible)
@@ -2854,6 +3024,8 @@ game.onUpdateInterval(1000, function() {
 })
 function spriteJump(spriteType: number){
     for(let sprite of sprites.allOfKind(spriteType)){
+        if(sprites.readDataString(sprite, "type") != "ground")
+            break
         if (Math.randomRange(1, 100) < 10){
             sprite.vy = Math.randomRange(-50, -100)
         }

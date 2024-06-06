@@ -22,6 +22,31 @@ f f e 4 4 4 4 4 f f f f
 . f f f f f f f f f f . 
 . . f f f . . . f f . . 
 `;
+            case "image2":
+            case "drone":return img`
+...bbbbbbbbbb...
+..b1111111111b..
+.b111111111111b.
+.b111111111111b.
+.bddccccccccddb.
+.bdc66666666cdb.
+.bdc61d66666cdb.
+.bdc6d666666cdb.
+.bdc66666666cdb.
+.bdc66666666cdb.
+.bdc66666666cdb.
+.bddccccccccddb.
+.cbbbbbbbbbbbbc.
+fccccccccccccccf
+fbbbbbbbbbbbbbbf
+fbcdddddddddddbf
+fbcbbbbbbbbbbcbf
+fbcbbbbbbbbbbcbf
+fbccccccccccccbf
+fbbbbbbbbbbbbbbf
+fbffffffffffffbf
+ffffffffffffffff
+`;
         }
         return null;
     })
