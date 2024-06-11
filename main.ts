@@ -9,6 +9,7 @@ namespace SpriteKind {
     export const Selector = SpriteKind.create()
     export const Arrow = SpriteKind.create()
     export const Indicator = SpriteKind.create()
+    export const EnemyProjectile = SpriteKind.create()
 }
 
 let currentLevel: number = -1
@@ -46,14 +47,6 @@ let airEnemyObject = {
         assets.image`drone`,
     ],
     "heatlh" : [1, ],
-    "animations" : [
-        [
-            img``,
-        ],
-        [
-            img``,
-        ]
-    ]
 }
 
 let groundEnemyObject = {
@@ -176,6 +169,87 @@ let groundEnemyObject = {
         ]
     ]
 }
+let shootingEnemyObject = {
+    "image" : [
+        img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . 4 4 4 4 . . . . . .
+            . . . . 4 4 4 4 4 4 4 4 . . . .
+            . . . 4 4 4 5 5 5 5 4 4 4 . . .
+            . . 4 4 4 4 4 4 4 5 5 4 4 4 . .
+            . . 4 4 4 4 4 4 4 4 5 5 4 4 . .
+            . 4 4 4 4 4 4 4 4 4 5 5 4 4 4 .
+            . 4 4 4 4 4 4 4 4 4 5 5 5 4 4 .
+            . 4 4 4 4 4 4 4 4 4 5 5 5 4 4 .
+            . 4 4 4 4 4 4 4 4 4 5 5 5 4 4 .
+            . . 4 4 4 4 4 4 4 4 5 5 4 4 . .
+            . . 4 4 4 4 4 4 4 4 4 4 4 4 . .
+            . . . 4 4 4 4 4 4 4 4 4 4 . . .
+            . . . . 4 4 4 4 4 4 4 4 . . . .
+            . . . . . . 4 4 4 4 . . . . . .
+            . . . . . . . . . . . . . . . .
+        `
+    ],
+    "health" : [1,]
+}
+let spinningEnemyObject = {
+    "image" : [
+        img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . 4 4 4 4 4 4 4 . . . .
+            . . . . 4 4 4 4 4 4 4 4 4 . . .
+            . . . 4 4 4 4 4 4 4 4 4 4 4 . .
+            . . . 4 4 4 4 4 4 4 4 4 4 4 . .
+            . . . 4 4 4 4 4 4 4 4 4 4 4 . .
+            . . . 4 4 4 4 4 4 4 4 4 4 4 . .
+            . . . 4 4 4 4 4 4 4 4 4 4 4 . .
+            . . . 4 4 4 4 4 4 4 4 4 4 4 . .
+            . . . 4 4 4 4 4 4 4 4 4 4 4 . .
+            . . . . 4 4 4 4 4 4 4 4 4 . . .
+            . . . . . 4 4 4 4 4 4 4 . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+        `,
+        img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . 7 7 7 7 7 7 7 . . . .
+            . . . . 7 7 7 7 7 7 7 7 7 . . .
+            . . . 7 7 7 7 7 7 7 7 7 7 7 . .
+            . . . 7 7 7 7 7 7 7 7 7 7 7 . .
+            . . . 7 7 7 7 7 7 7 7 7 7 7 . .
+            . . . 7 7 7 7 7 7 7 7 7 7 7 . .
+            . . . 7 7 7 7 7 7 7 7 7 7 7 . .
+            . . . 7 7 7 7 7 7 7 7 7 7 7 . .
+            . . . 7 7 7 7 7 7 7 7 7 7 7 . .
+            . . . . 7 7 7 7 7 7 7 7 7 . . .
+            . . . . . 7 7 7 7 7 7 7 . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+        `,
+        img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . a a a a a a a . . . .
+            . . . . a a a a a a a a a . . .
+            . . . a a a a a a a a a a a . .
+            . . . a a a a a a a a a a a . .
+            . . . a a a a a a a a a a a . .
+            . . . a a a a a a a a a a a . .
+            . . . a a a a a a a a a a a . .
+            . . . a a a a a a a a a a a . .
+            . . . a a a a a a a a a a a . .
+            . . . . a a a a a a a a a . . .
+            . . . . . a a a a a a a . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+        `,
+    ]
+}
 function createEnemyAnimations(animationList: Image[][], sprite: Sprite){
     // A for loop that sets animations based on left, right, up, and down
     let animationDirection = [Predicate.MovingLeft, Predicate.MovingRight, Predicate.MovingUp, Predicate.MovingDown]
@@ -185,6 +259,48 @@ function createEnemyAnimations(animationList: Image[][], sprite: Sprite){
         count += 1
     }
 }
+function createSpinningEnemy(tileLocation: tiles.Location, enemyType: number){
+    if(enemyType < 0 || enemyType >= spinningEnemyObject["image"].length){
+        console.log("Invalid Spinning Enemy")
+        return
+    }
+    let enemySprite: Sprite = sprites.create(spinningEnemyObject["image"][enemyType], SpriteKind.Enemy)
+    sprites.setDataString(enemySprite, "type", "spinning")
+    tiles.placeOnTile(enemySprite, tileLocation)
+}
+function createShootingEnemy(tileLocation: tiles.Location){
+    let enemySprite: Sprite = sprites.create(shootingEnemyObject["image"][0], SpriteKind.Enemy)
+    sprites.setDataString(enemySprite, "type", "shooting")
+    tiles.placeOnTile(enemySprite, tileLocation)
+    spriteutils.onSpriteUpdateInterval(enemySprite, 2000, function(sprite){
+        let playerSpriteReference = spriteutils.getSpritesWithin(SpriteKind.Player, 80, sprite)
+        if(playerSpriteReference.length > 0){
+            let enemyProjectile: Sprite = sprites.create(img`
+                . . . . . . . . . . . . . . . .
+                . . . . . . . . . . . . . . . .
+                . . . . . . . . . . . . . . . .
+                . . . . . . . . . . . . . . . .
+                . . . . . . . . . . . . . . . .
+                . . . . . . . . . . . . . . . .
+                . . . . . . . 2 2 . . . . . . .
+                . . . . . . 2 5 5 2 . . . . . .
+                . . . . . . 2 5 5 2 . . . . . .
+                . . . . . . . 2 2 . . . . . . .
+                . . . . . . . . . . . . . . . .
+                . . . . . . . . . . . . . . . .
+                . . . . . . . . . . . . . . . .
+                . . . . . . . . . . . . . . . .
+                . . . . . . . . . . . . . . . .
+                . . . . . . . . . . . . . . . .
+            `, SpriteKind.EnemyProjectile)
+            enemyProjectile.setPosition(sprite.x, sprite.y)
+            enemyProjectile.setFlag(SpriteFlag.DestroyOnWall, true)
+            spriteutils.setVelocityAtAngle(enemyProjectile, spriteutils.angleFrom(sprite, playerSpriteReference[0]) , 50)
+
+        }
+    })
+}
+
 function createGroundEnemy(tileLocation: tiles.Location){
     
     let enemySprite = sprites.create(groundEnemyObject["image"][0], SpriteKind.Enemy)
@@ -240,6 +356,27 @@ function generateTilemapEnemies(){
     }
     for (let tileLocation of tiles.getTilesByType(assets.tile`airEnemySpawnTile`)) {
         createAirEnemy(tileLocation)
+        tiles.setTileAt(tileLocation, img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+        `)
+    }
+    for (let tileLocation of tiles.getTilesByType(assets.tile`shootingEnemySpawnTile`)) {
+        createShootingEnemy(tileLocation)
         tiles.setTileAt(tileLocation, img`
             . . . . . . . . . . . . . . . .
             . . . . . . . . . . . . . . . .
@@ -880,7 +1017,11 @@ function batPower() {
 info.onCountdownEnd(function(){
     resetPlayerPowerups()
     timer.after(10000, function() {
-        sprites.setDataBoolean(playerSprite, "BatPower", true)
+        if(!sprites.readDataBoolean(playerSprite, "ShrinkPower") && 
+            !sprites.readDataBoolean(playerSprite, "GrowPower") &&
+            !sprites.readDataBoolean(playerSprite, "ShootPower")){
+            sprites.setDataBoolean(playerSprite, "BatPower", true)
+        }
     })
 })
 controller.left.onEvent(ControllerButtonEvent.Pressed, function(){
@@ -1199,6 +1340,7 @@ scene.onOverlapTile(SpriteKind.BatPower, assets.tile`lavaTile`, function (sprite
 scene.onOverlapTile(SpriteKind.Enemy, assets.tile`lava`, function(sprite, location){
     sprite.destroy(effects.fire)
 })
+
 
 // Player destroys after overlapping hazard tiles
 scene.onOverlapTile(SpriteKind.Player, assets.tile`bottomHazardTile`, function(sprite, location){
@@ -2208,7 +2350,7 @@ function createPlayerJumpingAnimation(){
     ], 100, characterAnimations.rule(Predicate.Moving, Predicate.FacingRight))
 }
 
-// player and enemy overlap events
+// player, projectile, and enemy overlap events
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Collectible, function(sprite, otherSprite){
     sprites.destroy(otherSprite)
     info.changeScoreBy(5)
@@ -2219,6 +2361,10 @@ sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function(sprite, othe
     otherSprite.destroy(effects.disintegrate, 1000)
     sprite.destroy(effects.fire, 100)
 })
+sprites.onOverlap(SpriteKind.EnemyProjectile, SpriteKind.Player, function(sprite, otherSprite){
+    sprite.destroy()
+    destroySprite(sprite, 0, -70, 8)
+})
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function(sprite, otherSprite){
     if(sprite.bottom < otherSprite.y){
         sprite.vy = -100
@@ -2227,6 +2373,7 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function(sprite, otherSpr
         destroySprite(sprite, 0, -70, 8)
     }
 })
+
 
 // Power up overlap events
 sprites.onOverlap(SpriteKind.Player, SpriteKind.GrowPower, function(sprite, otherSprite){
