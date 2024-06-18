@@ -11,6 +11,8 @@ namespace SpriteKind {
     export const Indicator = SpriteKind.create()
     export const EnemyProjectile = SpriteKind.create()
     export const SpinEnemy = SpriteKind.create()
+    export const MysteryEnemy = SpriteKind.create()
+    export const ShellEnemy = SpriteKind.create()
 }
 
 let currentLevel: number = -1
@@ -290,6 +292,62 @@ function createSpinningEnemy(tileLocation: tiles.Location, enemyType: number, am
 
 
 }
+function createMysteryEnemy(tileLocation: tiles.Location){
+    let enemySprite: Sprite = sprites.create(img`
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . c c . . . .
+        . . . . . . c c c c 6 3 c . . .
+        . . . . . c 6 6 3 3 3 6 c . . .
+        . . . . c 6 6 3 3 3 3 3 3 c . .
+        b c c c 6 6 c c 3 3 3 3 3 3 c .
+        b 5 5 c 6 c 5 5 c 3 3 3 3 3 c .
+        f f 5 c 6 c 5 f f 6 3 3 3 c c .
+        f f 5 c c c 5 f f 6 6 6 6 c c .
+        . b 5 5 3 5 5 c 3 3 3 3 3 3 c .
+        . c 5 5 5 5 4 c c c 3 3 3 3 c .
+        . c 4 5 5 4 4 b 5 5 c 3 3 c . .
+        . c 5 b 4 4 b b 5 c b b c . . .
+        . c c 5 4 c 5 5 5 c c 5 c . . .
+        . . . c c 5 5 5 5 c c c c . . .
+        . . . . c c c c c c . . . . . .
+    `, SpriteKind.MysteryEnemy)
+    enemySprite.ay = 300
+    let directionX: number = 0
+    if (Math.randomRange(-1, 1) < 0) {
+        directionX = -1
+    } else {
+        directionX = 1
+    }
+    enemySprite.setVelocity(directionX * Math.randomRange(25, 40), 0)
+    sprites.setDataNumber(enemySprite, "speed", enemySprite.vx)
+
+    tiles.placeOnTile(enemySprite, tileLocation)
+}
+
+function createShellEnemy(spriteLocation: Sprite){
+    let enemySprite: Sprite = sprites.create(img`
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . c c . .
+        . . . . . . . c c c c c 6 3 c .
+        . . . . . . c 6 6 3 3 3 6 6 c .
+        . . . . . c 6 6 6 3 3 3 3 3 3 c
+        . . . . c 6 6 6 6 3 3 3 3 3 3 c
+        . . c c c 6 6 6 6 6 3 3 3 3 3 c
+        . c 3 3 3 c 6 6 6 6 6 3 3 3 3 c
+        c 3 c c c 3 c 6 6 6 6 6 3 3 c c
+        c 6 c c c c 3 c 6 6 6 6 6 6 c c
+        c 6 c c c c 6 6 c 6 6 3 3 3 3 c
+        . c 6 c c c c 6 c 6 3 3 3 3 6 c
+        . . c 6 c c c c c 6 3 3 3 6 c .
+        . . . c c c c c c c c c c c . .
+    `, SpriteKind.ShellEnemy)
+    enemySprite.ay = 300
+    sprites.setDataNumber(enemySprite, "speed", enemySprite.vx)
+    enemySprite.setPosition(spriteLocation.x, spriteLocation.y)
+}
+
 function createShootingEnemy(tileLocation: tiles.Location){
     let enemySprite: Sprite = sprites.create(shootingEnemyObject["image"][0], SpriteKind.Enemy)
     sprites.setDataString(enemySprite, "type", "shooting")
@@ -420,6 +478,27 @@ function generateTilemapEnemies(){
     }
     for (let tileLocation of tiles.getTilesByType(assets.tile`spinningEnemySpawnTile`)) {
         createSpinningEnemy(tileLocation, Math.randomRange(0, spinningEnemyObject["image"].length - 1), 3)
+        tiles.setTileAt(tileLocation, img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+        `)
+    }
+    for (let tileLocation of tiles.getTilesByType(assets.tile`mysteryEnemySpawnTile`)){
+        createMysteryEnemy(tileLocation)
         tiles.setTileAt(tileLocation, img`
             . . . . . . . . . . . . . . . .
             . . . . . . . . . . . . . . . .
@@ -1382,6 +1461,13 @@ scene.onOverlapTile(SpriteKind.BatPower, assets.tile`lavaTile`, function (sprite
 scene.onOverlapTile(SpriteKind.Enemy, assets.tile`lava`, function(sprite, location){
     sprite.destroy(effects.fire)
 })
+scene.onOverlapTile(SpriteKind.MysteryEnemy, assets.tile`lava`, function (sprite, location) {
+    sprite.destroy(effects.fire)
+})
+scene.onOverlapTile(SpriteKind.ShellEnemy, assets.tile`lava`, function (sprite, location) {
+    sprite.destroy(effects.fire)
+})
+
 
 
 // Player destroys after overlapping hazard tiles
@@ -2418,6 +2504,40 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function(sprite, otherSpr
 sprites.onOverlap(SpriteKind.Player, SpriteKind.SpinEnemy, function(sprite, otherSprite){
     destroySprite(sprite, 0, -70, 8)
 })
+sprites.onOverlap(SpriteKind.Player, SpriteKind.MysteryEnemy, function(sprite, otherSprite){
+    if(sprite.bottom < otherSprite.y){
+        sprite.vy = -100
+        otherSprite.destroy()
+        createShellEnemy(otherSprite)
+
+    } else {
+        destroySprite(sprite, 0, -70, 8)
+    }
+})
+sprites.onOverlap(SpriteKind.Player, SpriteKind.ShellEnemy, function(sprite, otherSprite){
+    if(Math.abs(otherSprite.vx) > 0){
+        if(sprite.bottom < otherSprite.bottom){
+            otherSprite.vx = 0
+            sprite.vy = -100
+        } else {
+            destroySprite(sprite, 0, -70, 8)
+        }
+    } else {
+        if(characterAnimations.matchesRule(sprite, Predicate.FacingRight)){
+            otherSprite.vx = 100
+        } else {
+            otherSprite.vx = -100
+        }
+        otherSprite.setFlag(SpriteFlag.GhostThroughSprites, true)
+
+        timer.after(100, function() {
+            otherSprite.setFlag(SpriteFlag.GhostThroughSprites, false)
+        })
+
+    }
+    sprites.setDataNumber(otherSprite, "speed", otherSprite.vx)
+    
+})
 
 
 // Power up overlap events
@@ -3200,6 +3320,8 @@ game.onUpdate(function() {
     changeDirectionX(SpriteKind.ShrinkPower)
     changeDirectionX(SpriteKind.BatPower)
     changeDirectionX(SpriteKind.Enemy)
+    changeDirectionX(SpriteKind.MysteryEnemy)
+    changeDirectionX(SpriteKind.ShellEnemy)
 
 
     if(tiles.getTilesByType(assets.tile`luckyTile`).length <= 0) {
