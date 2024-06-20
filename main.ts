@@ -253,12 +253,12 @@ let spinningEnemyObject = {
         `,
     ]
 }
-function createEnemyAnimations(animationList: Image[][], sprite: Sprite){
+function createEnemyAnimations(animationList: Image[][], sprite: Sprite, animationInterval: number){
     // A for loop that sets animations based on left, right, up, and down
     let animationDirection = [Predicate.MovingLeft, Predicate.MovingRight, Predicate.MovingUp, Predicate.MovingDown]
     let count: number = 0
     for(let currentAnimation of animationList){
-        characterAnimations.loopFrames(sprite, currentAnimation, 100, animationDirection[count])
+        characterAnimations.loopFrames(sprite, currentAnimation, animationInterval, animationDirection[count])
         count += 1
     }
 }
@@ -293,6 +293,157 @@ function createSpinningEnemy(tileLocation: tiles.Location, enemyType: number, am
 
 }
 function createMysteryEnemy(tileLocation: tiles.Location){
+    let enemySpriteAnimations: Image[][] = [
+        [
+            img`
+                . . . . . . . . . . . c c . . .
+                . . . . . . . c c c c 6 3 c . .
+                . . . . . . c 6 3 3 3 3 6 c . .
+                . . c c . c 6 c c 3 3 3 3 3 c .
+                . b 5 5 c 6 c 5 5 c 3 3 3 3 3 c
+                . f f 5 c 6 c 5 f f 3 3 3 3 3 c
+                . f f 5 c 6 c 5 f f 6 3 3 3 c c
+                . b 5 5 3 c 3 5 5 c 6 6 6 6 c c
+                . . b 5 5 3 5 5 c 3 3 3 3 3 3 c
+                . . c 5 5 5 5 b c c 3 3 3 3 3 c
+                . . c 4 5 5 4 b 5 5 c 3 3 3 c .
+                . c 5 b 4 4 b b 5 c c b b b . .
+                . c 4 4 b 5 5 5 4 c 4 4 4 5 b .
+                . c 5 4 c 5 5 5 c 4 4 4 c 5 c .
+                . c 5 c 5 5 5 5 c 4 4 4 c c c .
+                . . c c c c c c c . . . . . . .
+            `,
+            img`
+                . . . . . . . . . . . . . . . .
+                . . . . . . . . . . c c . . . .
+                . . . . . . c c c c 6 3 c . . .
+                . . . . . c 6 6 3 3 3 6 c . . .
+                . . . . c 6 6 3 3 3 3 3 3 c . .
+                b c c c 6 6 c c 3 3 3 3 3 3 c .
+                b 5 5 c 6 c 5 5 c 3 3 3 3 3 c .
+                f f 5 c 6 c 5 f f 6 3 3 3 c c .
+                f f 5 c c c 5 f f 6 6 6 6 c c .
+                . b 5 5 3 5 5 c 3 3 3 3 3 3 c .
+                . c 5 5 5 5 4 c c c 3 3 3 3 c .
+                . c 4 5 5 4 4 b 5 5 c 3 3 c . .
+                . c 5 b 4 4 b b 5 c b b c . . .
+                . c c 5 4 c 5 5 5 c c 5 c . . .
+                . . . c c 5 5 5 5 c c c c . . .
+                . . . . c c c c c c . . . . . .
+            `,
+            img`
+                . . . . . . . . . . . . . . . .
+                . . . . . . . . . . . c c . . .
+                . . . . . . . c c c c 6 3 c . .
+                . . . . . . c 6 6 3 3 3 6 c . .
+                . . . . . c 6 6 3 3 3 3 3 3 c .
+                . b c c c 6 6 c c 3 3 3 3 3 3 c
+                . b 5 5 c 6 c 5 5 c 3 3 3 3 3 c
+                . f f 5 c 6 c 5 f f 6 3 3 3 c c
+                . f f 5 c c c 5 f f 6 6 6 6 c c
+                . . b 5 5 3 5 5 c c c 3 3 3 3 c
+                . . c 5 5 5 5 5 b 5 5 c 3 3 3 c
+                . c 4 4 5 5 4 4 b b 5 c 3 3 c .
+                . c 5 5 b 4 4 4 b 5 5 5 b c . .
+                . c 5 5 5 4 4 4 c 5 5 5 c b . .
+                . . c c c c 4 c 5 5 5 5 c c . .
+                . . . . c c c c c c c c c c . .
+            `,
+            img`
+                . . . . . . . . . . . c c . . .
+                . . . . . . . c c c c 6 3 c . .
+                . . . . . . c 6 3 3 3 3 6 c . .
+                . . c c . c 6 c c 3 3 3 3 3 c .
+                . b 5 5 c 6 c 5 5 c 3 3 3 3 3 c
+                . f f 5 c 6 c 5 f f 3 3 3 3 3 c
+                . f f 5 c 6 c 5 f f 6 3 3 3 c c
+                . b 5 5 3 c 3 5 5 c 6 6 6 6 c c
+                . . b 5 5 3 5 5 c 3 3 3 3 3 3 c
+                . c c 5 5 5 5 4 c c 3 3 3 3 3 c
+                c 5 5 4 5 5 4 c 5 5 c 3 3 3 c .
+                b 5 4 b 4 4 4 c 5 5 5 b c c . .
+                c 4 5 5 b 4 4 c 5 5 5 c b b . .
+                c 5 5 5 c 4 c 5 5 5 5 c c 5 b .
+                c 5 5 5 5 c 4 c c c c c c 5 c .
+                . c c c c c c . . . . . c c c .
+            `,
+        ],
+        [
+            img`
+                . . . c c . . . . . . . . . . .
+                . . c 3 6 c c c c . . . . . . .
+                . . c 6 3 3 3 3 6 c . . . . . .
+                . c 3 3 3 3 3 c c 6 c . c c . .
+                c 3 3 3 3 3 c 5 5 c 6 c 5 5 b .
+                c 3 3 3 3 3 f f 5 c 6 c 5 f f .
+                c c 3 3 3 6 f f 5 c 6 c 5 f f .
+                c c 6 6 6 6 c 5 5 3 c 3 5 5 b .
+                c 3 3 3 3 3 3 c 5 5 3 5 5 b . .
+                c 3 3 3 3 3 c c b 5 5 5 5 c . .
+                . c 3 3 3 c 5 5 b 4 5 5 4 c . .
+                . . b b b c c 5 b b 4 4 b 5 c .
+                . b 5 4 4 4 c 4 5 5 5 b 4 4 c .
+                . c 5 c 4 4 4 c 5 5 5 c 4 5 c .
+                . c c c 4 4 4 c 5 5 5 5 c 5 c .
+                . . . . . . . c c c c c c c . .
+            `,
+            img`
+                . . . . . . . . . . . . . . . .
+                . . . . c c . . . . . . . . . .
+                . . . c 3 6 c c c c . . . . . .
+                . . . c 6 3 3 3 6 6 c . . . . .
+                . . c 3 3 3 3 3 3 6 6 c . . . .
+                . c 3 3 3 3 3 3 c c 6 6 c c c b
+                . c 3 3 3 3 3 c 5 5 c 6 c 5 5 b
+                . c c 3 3 3 6 f f 5 c 6 c 5 f f
+                . c c 6 6 6 6 f f 5 c c c 5 f f
+                . c 3 3 3 3 3 3 c 5 5 3 5 5 b .
+                . c 3 3 3 3 c c c 4 5 5 5 5 c .
+                . . c 3 3 c 5 5 b 4 4 5 5 4 c .
+                . . . c b b c 5 b b 4 4 b 5 c .
+                . . . c 5 c c 5 5 5 c 4 5 c c .
+                . . . c c c c 5 5 5 5 c c . . .
+                . . . . . . c c c c c c . . . .
+            `,
+            img`
+                . . . . . . . . . . . . . . . .
+                . . . c c . . . . . . . . . . .
+                . . c 3 6 c c c c . . . . . . .
+                . . c 6 3 3 3 6 6 c . . . . . .
+                . c 3 3 3 3 3 3 6 6 c . . . . .
+                c 3 3 3 3 3 3 c c 6 6 c c c b .
+                c 3 3 3 3 3 c 5 5 c 6 c 5 5 b .
+                c c 3 3 3 6 f f 5 c 6 c 5 f f .
+                c c 6 6 6 6 f f 5 c c c 5 f f .
+                c 3 3 3 3 c c c 5 5 3 5 5 b . .
+                c 3 3 3 c 5 5 b 5 5 5 5 5 c . .
+                . c 3 3 c 5 b b 4 4 5 5 4 4 c .
+                . . c b 5 5 5 b 4 4 4 b 5 5 c .
+                . . b c 5 5 5 c 4 4 4 5 5 5 c .
+                . . c c 5 5 5 5 c 4 c c c c . .
+                . . c c c c c c c c c c . . . .
+            `,
+            img`
+                . . . c c . . . . . . . . . . .
+                . . c 3 6 c c c c . . . . . . .
+                . . c 6 3 3 3 3 6 c . . . . . .
+                . c 3 3 3 3 3 c c 6 c . c c . .
+                c 3 3 3 3 3 c 5 5 c 6 c 5 5 b .
+                c 3 3 3 3 3 f f 5 c 6 c 5 f f .
+                c c 3 3 3 6 f f 5 c 6 c 5 f f .
+                c c 6 6 6 6 c 5 5 3 c 3 5 5 b .
+                c 3 3 3 3 3 3 c 5 5 3 5 5 b . .
+                c 3 3 3 3 3 c c 4 5 5 5 5 c c .
+                . c 3 3 3 c 5 5 c 4 5 5 4 5 5 c
+                . . c c b 5 5 5 c 4 4 4 b 4 5 b
+                . . b b c 5 5 5 c 4 4 b 5 5 4 c
+                . b 5 c c 5 5 5 5 c 4 c 5 5 5 c
+                . c 5 c c c c c c 4 c 5 5 5 5 c
+                . c c c . . . . . c c c c c c .
+            `,
+        ],
+    ]
+
     let enemySprite: Sprite = sprites.create(img`
         . . . . . . . . . . . . . . . .
         . . . . . . . . . . c c . . . .
@@ -311,6 +462,7 @@ function createMysteryEnemy(tileLocation: tiles.Location){
         . . . c c 5 5 5 5 c c c c . . .
         . . . . c c c c c c . . . . . .
     `, SpriteKind.MysteryEnemy)
+    createEnemyAnimations(enemySpriteAnimations, enemySprite, 150)
     enemySprite.ay = 300
     let directionX: number = 0
     if (Math.randomRange(-1, 1) < 0) {
@@ -325,6 +477,7 @@ function createMysteryEnemy(tileLocation: tiles.Location){
 }
 
 function createShellEnemy(spriteLocation: Sprite){
+
     let enemySprite: Sprite = sprites.create(img`
         . . . . . . . . . . . . . . . .
         . . . . . . . . . . . . . . . .
@@ -346,6 +499,7 @@ function createShellEnemy(spriteLocation: Sprite){
     enemySprite.ay = 300
     sprites.setDataNumber(enemySprite, "speed", enemySprite.vx)
     enemySprite.setPosition(spriteLocation.x, spriteLocation.y)
+    enemySprite.setFlag(SpriteFlag.AutoDestroy, true)
 }
 
 function createShootingEnemy(tileLocation: tiles.Location){
@@ -382,7 +536,6 @@ function createShootingEnemy(tileLocation: tiles.Location){
 }
 
 function createGroundEnemy(tileLocation: tiles.Location){
-    
     let enemySprite = sprites.create(groundEnemyObject["image"][0], SpriteKind.Enemy)
     enemySprite.ay = 300
     let directionX: number = 0
@@ -395,7 +548,7 @@ function createGroundEnemy(tileLocation: tiles.Location){
     sprites.setDataNumber(enemySprite, "speed", enemySprite.vx)
     sprites.setDataString(enemySprite, "type", "ground")
     tiles.placeOnTile(enemySprite, tileLocation)
-    createEnemyAnimations(groundEnemyObject["animations"], enemySprite)
+    createEnemyAnimations(groundEnemyObject["animations"], enemySprite, 100)
 }
 function createAirEnemy(tileLocation: tiles.Location){
     let enemySprite = sprites.create(airEnemyObject["imgae"][0], SpriteKind.Enemy)
@@ -1076,11 +1229,14 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
     if (jumps > 0 && !isFalling && !isFlying){
         isFalling = true
         jumps -= 1
+        music.play(music.createSoundEffect(WaveShape.Triangle, 400, 869, 255, 0, 200, SoundExpressionEffect.None, InterpolationCurve.Logarithmic), music.PlaybackMode.InBackground)
         if(sprites.readDataBoolean(playerSprite, "ShrinkPower")){
             playerSprite.vy = -250
             return
         }
+        
         playerSprite.vy = -200
+        
     }
 })
 controller.B.onEvent(ControllerButtonEvent.Pressed, function(){
@@ -1128,6 +1284,7 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, function(){
             projectileSprite.x -= 10
             projectileSprite.vx = -150
         }
+        music.play(music.createSoundEffect(WaveShape.Square, 379, 1, 255, 0, 250, SoundExpressionEffect.None, InterpolationCurve.Logarithmic), music.PlaybackMode.InBackground)
     }
 })
 function batPower() {
@@ -1366,13 +1523,17 @@ scene.onHitWall(SpriteKind.Player, function(sprite, location){
                 . . . . . . . . . . . . . . . .
                 . . . . . . . . . . . . . . . .
             `, location)
+            music.play(music.createSoundEffect(WaveShape.Sine, 200, 600, 255, 0, 200, SoundExpressionEffect.None, InterpolationCurve.Linear), music.PlaybackMode.InBackground)
         }
         if (tiles.tileAtLocationEquals(location, assets.tile`depletedTile`)){
             hitPowerBox(assets.tile`depletedTile`, location)
+            music.play(music.createSoundEffect(WaveShape.Sine, 200, 600, 255, 0, 200, SoundExpressionEffect.None, InterpolationCurve.Linear), music.PlaybackMode.InBackground)
         }
         if (tiles.tileAtLocationEquals(location, assets.tile`stoneUnbreakable`)){
             if(sprites.readDataBoolean(sprite, "GrowPower")){
+                music.play(music.createSoundEffect(WaveShape.Sawtooth, 1137, 1, 255, 0, 100, SoundExpressionEffect.None, InterpolationCurve.Logarithmic), music.PlaybackMode.InBackground)
                 destroyTile(assets.tile`stoneUnbreakable`, location, effects.disintegrate, -50)
+                return
             } else if(Math.randomRange(1, 100) < 5){
                 let targetLocation: tiles.Location = tiles.getTileLocation(location.column, location.row - 1)
                 createCollectible(targetLocation)
@@ -1396,6 +1557,7 @@ scene.onHitWall(SpriteKind.Player, function(sprite, location){
                     . . . . . . . . . . . . . . . .
                 `, location)
             }
+            music.play(music.createSoundEffect(WaveShape.Square, 200, 1, 255, 0, 25, SoundExpressionEffect.None, InterpolationCurve.Curve), music.PlaybackMode.InBackground)
         }
     }
 })
@@ -1446,26 +1608,41 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`exitTile`, function (sprite, 
 // Destroy power ups when they enter the lava
 scene.onOverlapTile(SpriteKind.GrowPower, assets.tile`lavaTile`, function (sprite, location) {
     sprite.destroy(effects.fire)
+    music.play(music.createSoundEffect(WaveShape.Sine, 200, 825, 255, 0, 150, SoundExpressionEffect.Vibrato, InterpolationCurve.Linear), music.PlaybackMode.UntilDone)
+
 })
 scene.onOverlapTile(SpriteKind.ShootPower, assets.tile`lavaTile`, function (sprite, location) {
     sprite.destroy(effects.fire)
+    music.play(music.createSoundEffect(WaveShape.Sine, 200, 825, 255, 0, 150, SoundExpressionEffect.Vibrato, InterpolationCurve.Linear), music.PlaybackMode.UntilDone)
+
 })
 scene.onOverlapTile(SpriteKind.ShrinkPower, assets.tile`lavaTile`, function (sprite, location) {
     sprite.destroy(effects.fire)
+    music.play(music.createSoundEffect(WaveShape.Sine, 200, 825, 255, 0, 150, SoundExpressionEffect.Vibrato, InterpolationCurve.Linear), music.PlaybackMode.UntilDone)
+
 })
 scene.onOverlapTile(SpriteKind.BatPower, assets.tile`lavaTile`, function (sprite, location) {
     sprite.destroy(effects.fire)
+    music.play(music.createSoundEffect(WaveShape.Sine, 200, 825, 255, 0, 150, SoundExpressionEffect.Vibrato, InterpolationCurve.Linear), music.PlaybackMode.UntilDone)
+
 })
 
 // Enemy destroyes upon overlapping lava tile
-scene.onOverlapTile(SpriteKind.Enemy, assets.tile`lava`, function(sprite, location){
+scene.onOverlapTile(SpriteKind.Enemy, assets.tile`lavaTile`, function(sprite, location){
     sprite.destroy(effects.fire)
+    music.play(music.createSoundEffect(WaveShape.Sine, 200, 825, 255, 0, 150, SoundExpressionEffect.Vibrato, InterpolationCurve.Linear), music.PlaybackMode.UntilDone)
+
+    
 })
-scene.onOverlapTile(SpriteKind.MysteryEnemy, assets.tile`lava`, function (sprite, location) {
+scene.onOverlapTile(SpriteKind.MysteryEnemy, assets.tile`lavaTile`, function (sprite, location) {
     sprite.destroy(effects.fire)
+    music.play(music.createSoundEffect(WaveShape.Sine, 200, 825, 255, 0, 150, SoundExpressionEffect.Vibrato, InterpolationCurve.Linear), music.PlaybackMode.UntilDone)
+
 })
-scene.onOverlapTile(SpriteKind.ShellEnemy, assets.tile`lava`, function (sprite, location) {
+scene.onOverlapTile(SpriteKind.ShellEnemy, assets.tile`lavaTile`, function (sprite, location) {
     sprite.destroy(effects.fire)
+    music.play(music.createSoundEffect(WaveShape.Sine, 200, 825, 255, 0, 150, SoundExpressionEffect.Vibrato, InterpolationCurve.Linear), music.PlaybackMode.UntilDone)
+
 })
 
 
@@ -1486,11 +1663,13 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`leftHazardTile`, function (sp
 scene.onOverlapTile(SpriteKind.Player, assets.tile`lavaTile`, function (sprite, location) {
     destroySprite(sprite, 0, -70, 8)
 })
+
 function destroySprite(sprite: Sprite, velocityX: number, velocityY: number, cameraShakeStrength: number){
     sprite.setVelocity(velocityX, velocityY)
     sprite.setFlag(SpriteFlag.Ghost, true)
     sprites.destroy(sprite, effects.none, 1000)
     scene.cameraShake(cameraShakeStrength, 500)
+    music.play(music.createSoundEffect(WaveShape.Noise, 3321, 958, 255, 0, 150, SoundExpressionEffect.Warble, InterpolationCurve.Curve), music.PlaybackMode.InBackground)
 }
 
 sprites.onDestroyed(SpriteKind.Player, function(sprite){
@@ -2481,12 +2660,14 @@ function createPlayerJumpingAnimation(){
 // player, projectile, and enemy overlap events
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Collectible, function(sprite, otherSprite){
     sprites.destroy(otherSprite)
-    info.changeScoreBy(5)
-    music.play(music.melodyPlayable(music.baDing), music.PlaybackMode.UntilDone)
+    info.changeScoreBy(100)
+    music.play(music.melodyPlayable(music.baDing), music.PlaybackMode.InBackground)
 })
 sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function(sprite, otherSprite){
     otherSprite.vy = -100
     otherSprite.destroy(effects.disintegrate, 1000)
+    music.play(music.createSoundEffect(WaveShape.Triangle, 2430, 1, 255, 0, 400, SoundExpressionEffect.Warble, InterpolationCurve.Curve), music.PlaybackMode.InBackground)
+    info.changeScoreBy(10)
     sprite.destroy(effects.fire, 100)
 })
 sprites.onOverlap(SpriteKind.EnemyProjectile, SpriteKind.Player, function(sprite, otherSprite){
@@ -2497,6 +2678,8 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function(sprite, otherSpr
     if(sprite.bottom < otherSprite.y){
         sprite.vy = -100
         otherSprite.destroy(effects.disintegrate, 1000)
+        music.play(music.createSoundEffect(WaveShape.Triangle, 2430, 1, 255, 0, 400, SoundExpressionEffect.Warble, InterpolationCurve.Curve), music.PlaybackMode.InBackground)
+        info.changeScoreBy(25)
     } else {
         destroySprite(sprite, 0, -70, 8)
     }
@@ -2504,23 +2687,37 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function(sprite, otherSpr
 sprites.onOverlap(SpriteKind.Player, SpriteKind.SpinEnemy, function(sprite, otherSprite){
     destroySprite(sprite, 0, -70, 8)
 })
+sprites.onOverlap(SpriteKind.Projectile, SpriteKind.MysteryEnemy, function(sprite, otherSprite){
+    otherSprite.destroy(effects.disintegrate, 1000)
+    music.play(music.createSoundEffect(WaveShape.Triangle, 2430, 1, 255, 0, 400, SoundExpressionEffect.Warble, InterpolationCurve.Curve), music.PlaybackMode.InBackground)
+
+})
 sprites.onOverlap(SpriteKind.Player, SpriteKind.MysteryEnemy, function(sprite, otherSprite){
     if(sprite.bottom < otherSprite.y){
         sprite.vy = -100
         otherSprite.destroy()
-        createShellEnemy(otherSprite)
+        music.play(music.createSoundEffect(WaveShape.Triangle, 2430, 1, 255, 0, 400, SoundExpressionEffect.Warble, InterpolationCurve.Curve), music.PlaybackMode.InBackground)
 
+        info.changeScoreBy(25)
+        createShellEnemy(otherSprite)
     } else {
         destroySprite(sprite, 0, -70, 8)
     }
+})
+sprites.onOverlap(SpriteKind.Projectile, SpriteKind.ShellEnemy, function(sprite, otherSprite){
+    sprite.destroy()
+    music.play(music.createSoundEffect(WaveShape.Triangle, 2430, 1, 255, 0, 400, SoundExpressionEffect.Warble, InterpolationCurve.Curve), music.PlaybackMode.InBackground)
+
+    otherSprite.vy -= 100
+    otherSprite.destroy(effects.disintegrate, 1000)
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.ShellEnemy, function(sprite, otherSprite){
     if(Math.abs(otherSprite.vx) > 0){
         if(sprite.bottom < otherSprite.bottom){
             otherSprite.vx = 0
-            sprite.vy = -100
         } else {
             destroySprite(sprite, 0, -70, 8)
+            return
         }
     } else {
         if(characterAnimations.matchesRule(sprite, Predicate.FacingRight)){
@@ -2535,8 +2732,30 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.ShellEnemy, function(sprite, oth
         })
 
     }
-    sprites.setDataNumber(otherSprite, "speed", otherSprite.vx)
+    info.changeScoreBy(5)
+    sprite.vy = -100
+    music.play(music.createSoundEffect(WaveShape.Triangle, 400, 869, 255, 0, 200, SoundExpressionEffect.None, InterpolationCurve.Logarithmic), music.PlaybackMode.InBackground)
+    sprites.setDataNumber(otherSprite, "speed", otherSprite.vx)  
+})
+sprites.onOverlap(SpriteKind.ShellEnemy, SpriteKind.Enemy, function(sprite, otherSprite){
+    if( Math.abs(sprite.vx) > 0){
+        otherSprite.vy = -100
+        otherSprite.destroy(effects.disintegrate, 1000)
+        music.play(music.createSoundEffect(WaveShape.Triangle, 2430, 1, 255, 0, 400, SoundExpressionEffect.Warble, InterpolationCurve.Curve), music.PlaybackMode.InBackground)
+
+        info.changeScoreBy(5)
+    }
     
+})
+sprites.onOverlap(SpriteKind.ShellEnemy, SpriteKind.MysteryEnemy, function (sprite, otherSprite) {
+    if (Math.abs(sprite.vx) > 0) {
+        otherSprite.vy = -100
+        otherSprite.destroy(effects.disintegrate, 1000)
+        music.play(music.createSoundEffect(WaveShape.Triangle, 2430, 1, 255, 0, 400, SoundExpressionEffect.Warble, InterpolationCurve.Curve), music.PlaybackMode.InBackground)
+
+        info.changeScoreBy(5)
+    }
+
 })
 
 
@@ -2544,6 +2763,7 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.ShellEnemy, function(sprite, oth
 sprites.onOverlap(SpriteKind.Player, SpriteKind.GrowPower, function(sprite, otherSprite){
     otherSprite.destroy()
     resetPlayerPowerups()
+    music.play(music.createSoundEffect(WaveShape.Sine, 200, 825, 255, 0, 150, SoundExpressionEffect.Vibrato, InterpolationCurve.Linear), music.PlaybackMode.UntilDone)
     if(sprites.readDataBoolean(sprite, "GrowPower")){
         return
     }
@@ -2554,6 +2774,8 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.GrowPower, function(sprite, othe
 sprites.onOverlap(SpriteKind.Player, SpriteKind.ShrinkPower, function (sprite, otherSprite) {
     otherSprite.destroy()
     resetPlayerPowerups()
+    music.play(music.createSoundEffect(WaveShape.Sine, 200, 825, 255, 0, 150, SoundExpressionEffect.Vibrato, InterpolationCurve.Linear), music.PlaybackMode.UntilDone)
+
     if (sprites.readDataBoolean(sprite, "ShrinkPower")) {
         return
     }
@@ -2564,6 +2786,7 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.ShrinkPower, function (sprite, o
 sprites.onOverlap(SpriteKind.Player, SpriteKind.ShootPower, function (sprite, otherSprite) {
     otherSprite.destroy()
     resetPlayerPowerups()
+    music.play(music.createSoundEffect(WaveShape.Sine, 200, 825, 255, 0, 150, SoundExpressionEffect.Vibrato, InterpolationCurve.Linear), music.PlaybackMode.UntilDone)
     if (sprites.readDataBoolean(sprite, "ShootPower")) {
         return
     }
@@ -2572,12 +2795,15 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.ShootPower, function (sprite, ot
 sprites.onOverlap(SpriteKind.Player, SpriteKind.BatPower, function (sprite, otherSprite) {
     otherSprite.destroy()
     resetPlayerPowerups()
+    music.play(music.createSoundEffect(WaveShape.Sine, 200, 825, 255, 0, 150, SoundExpressionEffect.Vibrato, InterpolationCurve.Linear), music.PlaybackMode.UntilDone)
+
     if (sprites.readDataBoolean(sprite, "BatPower")) {
         return
     }
     sprites.setDataBoolean(sprite, "BatPower", true)
 
 })
+
 
 function createBatAnimations(){
     // Moving animations
