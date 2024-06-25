@@ -1,0 +1,17 @@
+{
+    "image1": {
+        "data": "hwQMABAAAAAAAP//AAAAAADw7v4PAPAPAO/u7v7////w7k5E1Oth//Du7kTUS2H/8O7uTt9NYQ/w7u5O301hD/Du/k5E5P4P8O///97f7f8A////RN/t/wD/////T/4PAPD///8AAAA=",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "zooKeeper"
+    },
+    "image2": {
+        "data": "hwQQABAAAAAAAAAAAAAAAAAAAAAAAAAAAMwAAADADADAAgwAAAzCAMAgDKoKLMAAAMz/oPDPDAAAAP+v/w8AAAAA8Kr6AAAAAADwqvoAAAAAAP+v/w8AAADM/6DwzwwAwCAMqgoswADAAgwAAAzCAADMAAAAwAwAAAAAAAAAAAAAAAAAAAAAAA==",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "drone"
+    },
+    "*": {
+        "mimeType": "image/x-mkcd-f4",
+        "dataEncoding": "base64",
+        "namespace": "myImages"
+    }
+}
