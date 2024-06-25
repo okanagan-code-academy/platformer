@@ -13,6 +13,7 @@ namespace SpriteKind {
     export const SpinEnemy = SpriteKind.create()
     export const MysteryEnemy = SpriteKind.create()
     export const ShellEnemy = SpriteKind.create()
+    export const Chest = SpriteKind.create()
 }
 
 let currentLevel: number = -1
@@ -691,6 +692,7 @@ function onStart() {
     }
     generateTilemapEnemies()
     generateTilemapCollectibles()
+    generateTilemapChests()
     createPlayer()
 }
 onStart()
@@ -2663,6 +2665,28 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Collectible, function(sprite, ot
     info.changeScoreBy(100)
     music.play(music.melodyPlayable(music.baDing), music.PlaybackMode.InBackground)
 })
+sprites.onOverlap(SpriteKind.Player, SpriteKind.Chest, function(sprite, otherSprite){
+    otherSprite.setImage(img`
+        . b b b b b b b b b b b b b b .
+        b e 4 4 4 4 4 4 4 4 4 4 4 4 4 b
+        b e 4 4 4 4 4 4 4 4 4 4 4 4 e b
+        b e e 4 4 4 4 4 4 4 4 4 4 e e b
+        b b b b b b b d d b b b b b b b
+        . b b b b b b c c b b b b b b .
+        b c c c c c b c c b c c c c c b
+        b c c c c c c b b c c c c c c b
+        b c c c c c c c c c c c c c c b
+        b c c c c c c c c c c c c c c b
+        b b b b b b b b b b b b b b b b
+        b e e e e e e e e e e e e e e b
+        b e e e e e e e e e e e e e e b
+        b c e e e e e e e e e e e e c b
+        b b b b b b b b b b b b b b b b
+        . b b . . . . . . . . . . b b .
+    `)
+    createChestCollectibles(otherSprite)
+    otherSprite.setFlag(SpriteFlag.Ghost, true)
+})
 sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function(sprite, otherSprite){
     otherSprite.vy = -100
     otherSprite.destroy(effects.disintegrate, 1000)
@@ -3426,6 +3450,134 @@ function generateTilemapCollectibles(){
         `)
     }
 }
+function generateTilemapChests(){
+    for(let tileLocation of tiles.getTilesByType(assets.tile`chestTileSpawn`)){
+        createChest(tileLocation)
+        tiles.setTileAt(tileLocation, img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+        `)
+    }
+}
+function createChest(tileLocation: tiles.Location){
+    let chestSprite: Sprite = sprites.create(img`
+        . . b b b b b b b b b b b b . .
+        . b e 4 4 4 4 4 4 4 4 4 4 e b .
+        b e 4 4 4 4 4 4 4 4 4 4 4 4 e b
+        b e 4 4 4 4 4 4 4 4 4 4 4 4 e b
+        b e 4 4 4 4 4 4 4 4 4 4 4 4 e b
+        b e e 4 4 4 4 4 4 4 4 4 4 e e b
+        b e e e e e e e e e e e e e e b
+        b e e e e e e e e e e e e e e b
+        b b b b b b b d d b b b b b b b
+        c b b b b b b c c b b b b b b c
+        c c c c c c b c c b c c c c c c
+        b e e e e e c b b c e e e e e b
+        b e e e e e e e e e e e e e e b
+        b c e e e e e e e e e e e e c b
+        b b b b b b b b b b b b b b b b
+        . b b . . . . . . . . . . b b .
+    `, SpriteKind.Chest)
+    tiles.placeOnTile(chestSprite, tileLocation)
+}
+
+function createChestCollectibles(sprite: Sprite){
+    let collectibleSprite: Sprite = sprites.create(img`
+            . . b b b b . .
+            . b 5 5 5 5 b .
+            b 5 d 3 3 d 5 b
+            b 5 3 5 5 1 5 b
+            c 5 3 5 5 1 d c
+            c d d 1 1 d d c
+            . f d d d d f .
+            . . f f f f . .
+        `, SpriteKind.Collectible)
+    animation.runImageAnimation(collectibleSprite, [
+        img`
+                . . b b b b . .
+                . b 5 5 5 5 b .
+                b 5 d 3 3 d 5 b
+                b 5 3 5 5 1 5 b
+                c 5 3 5 5 1 d c
+                c d d 1 1 d d c
+                . f d d d d f .
+                . . f f f f . .
+            `,
+        img`
+                . . b b b . . .
+                . b 5 5 5 b . .
+                b 5 d 3 d 5 b .
+                b 5 3 5 1 5 b .
+                c 5 3 5 1 d c .
+                c 5 d 1 d d c .
+                . f d d d f . .
+                . . f f f . . .
+            `,
+        img`
+                . . . b b . . .
+                . . b 5 5 b . .
+                . b 5 d 1 5 b .
+                . b 5 3 1 5 b .
+                . c 5 3 1 d c .
+                . c 5 1 d d c .
+                . . f d d f . .
+                . . . f f . . .
+            `,
+        img`
+                . . . b b . . .
+                . . b 5 5 b . .
+                . . b 1 1 b . .
+                . . b 5 5 b . .
+                . . b d d b . .
+                . . c d d c . .
+                . . c 3 3 c . .
+                . . . f f . . .
+            `,
+        img`
+                . . . b b b . .
+                . . b 5 5 5 b .
+                . b 5 d 3 d 5 b
+                . b 5 1 5 3 5 b
+                . c d 1 5 3 5 c
+                . c d d 1 d 5 c
+                . . f d d d f .
+                . . . f f f . .
+            `,
+        img``,
+    ], Math.randomRange(75, 125), true)
+    collectibleSprite.setPosition(sprite.x, sprite.y)
+    collectibleSprite.setVelocity(Math.randomRange(-100, 100), Math.randomRange(-150, -100))
+    sprites.setDataNumber(collectibleSprite, "velocityY", collectibleSprite.vy)
+    collectibleSprite.ay = 200
+    collectibleSprite.fx = 10
+    collectibleSprite.setFlag(SpriteFlag.GhostThroughSprites, true)
+}
+scene.onHitWall(SpriteKind.Collectible, function(sprite, tileLocation){
+    if(sprite.isHittingTile(CollisionDirection.Bottom)){
+        if (Math.abs(sprites.readDataNumber(sprite, "velocityY"))  < 25 ){
+            sprite.vy = 0
+            return
+        }
+        sprite.vy = (0.75) * sprites.readDataNumber(sprite, "velocityY")
+        sprites.setDataNumber(sprite, "velocityY", sprite.vy)
+        
+    }
+})
+
 function createCollectible(tileLocation: tiles.Location){
     let collectibleSprite: Sprite = sprites.create(img`
             . . b b b b . .
