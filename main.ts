@@ -14,9 +14,12 @@ namespace SpriteKind {
     export const MysteryEnemy = SpriteKind.create()
     export const ShellEnemy = SpriteKind.create()
     export const Chest = SpriteKind.create()
+    export const EmptyChest = SpriteKind.create()
+    export const Key = SpriteKind.create()
 }
 
 let currentLevel: number = -1
+let keysAmount: number = 0
 let maxLevel : number = 0
 let currentWorld: number = 0
 let maxWorld : number = 0
@@ -674,6 +677,7 @@ function generateTilemapEnemies(){
     }
 }
 function onStart() {
+    keysAmount = 0
     sprites.destroyAllSpritesOfKind(SpriteKind.Collectible)
     sprites.destroyAllSpritesOfKind(SpriteKind.GrowPower)
     sprites.destroyAllSpritesOfKind(SpriteKind.ShootPower)
@@ -693,6 +697,7 @@ function onStart() {
     generateTilemapEnemies()
     generateTilemapCollectibles()
     generateTilemapChests()
+    generateTilemapKeys()
     createPlayer()
 }
 onStart()
@@ -1600,11 +1605,17 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`checkPointTile`, function(spr
     tiles.setTileAt(location, assets.tile`spawnTile`)
 })
 // Send player back to world select once they reach the exitTile
-scene.onOverlapTile(SpriteKind.Player, assets.tile`exitTile`, function (sprite, location) {
-    levelSelect = true
-    maxLevel = currentLevel+1
-    sprite.destroy()
-    onStart()
+scene.onOverlapTile(SpriteKind.Player, assets.tile`closedExitTile`, function (sprite, location) {
+    sprite.sayText("I must open all the chests!", 500)
+    
+})
+scene.onOverlapTile(SpriteKind.Player, assets.tile`openExitTile`, function (sprite, location) {
+    game.gameOver(true)
+
+    // levelSelect = true
+    // maxLevel = currentLevel+1
+    // sprite.destroy()
+    // onStart()
 })
 
 // Destroy power ups when they enter the lava
@@ -1626,8 +1637,12 @@ scene.onOverlapTile(SpriteKind.ShrinkPower, assets.tile`lavaTile`, function (spr
 scene.onOverlapTile(SpriteKind.BatPower, assets.tile`lavaTile`, function (sprite, location) {
     sprite.destroy(effects.fire)
     music.play(music.createSoundEffect(WaveShape.Sine, 200, 825, 255, 0, 150, SoundExpressionEffect.Vibrato, InterpolationCurve.Linear), music.PlaybackMode.UntilDone)
-
 })
+scene.onOverlapTile(SpriteKind.Collectible, assets.tile`lavaTile`, function (sprite, location) {
+    sprite.destroy(effects.fire)
+    music.play(music.createSoundEffect(WaveShape.Sine, 200, 825, 255, 0, 150, SoundExpressionEffect.Vibrato, InterpolationCurve.Linear), music.PlaybackMode.UntilDone)
+})
+
 
 // Enemy destroyes upon overlapping lava tile
 scene.onOverlapTile(SpriteKind.Enemy, assets.tile`lavaTile`, function(sprite, location){
@@ -2662,10 +2677,13 @@ function createPlayerJumpingAnimation(){
 // player, projectile, and enemy overlap events
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Collectible, function(sprite, otherSprite){
     sprites.destroy(otherSprite)
-    info.changeScoreBy(100)
+    info.changeScoreBy(5)
     music.play(music.melodyPlayable(music.baDing), music.PlaybackMode.InBackground)
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Chest, function(sprite, otherSprite){
+    if(keysAmount <= 0){
+        return
+    }
     otherSprite.setImage(img`
         . b b b b b b b b b b b b b b .
         b e 4 4 4 4 4 4 4 4 4 4 4 4 4 b
@@ -2684,8 +2702,25 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Chest, function(sprite, otherSpr
         b b b b b b b b b b b b b b b b
         . b b . . . . . . . . . . b b .
     `)
-    createChestCollectibles(otherSprite)
-    otherSprite.setFlag(SpriteFlag.Ghost, true)
+    otherSprite.setKind(SpriteKind.EmptyChest)
+    let amount: number = Math.randomRange(4, 50)
+    while(amount > 0){
+        createChestCollectibles(otherSprite)
+        amount--
+    }
+    keysAmount--
+    checkCollectedChestAmount()
+})
+function checkCollectedChestAmount(){
+    if(sprites.allOfKind(SpriteKind.Chest).length == 0){
+        for(let exitLocation of tiles.getTilesByType(assets.tile`closedExitTile`)){
+            tiles.setTileAt(exitLocation, assets.tile`openExitTile`)
+        }
+    }
+}
+sprites.onOverlap(SpriteKind.Player, SpriteKind.Key, function(sprite, otherSprite){
+    otherSprite.destroy()
+    keysAmount++
 })
 sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function(sprite, otherSprite){
     otherSprite.vy = -100
@@ -3450,6 +3485,29 @@ function generateTilemapCollectibles(){
         `)
     }
 }
+function generateTilemapKeys(){
+    for (let tileLocation of tiles.getTilesByType(assets.tile`keySpawn`)) {
+        createKey(tileLocation)
+        tiles.setTileAt(tileLocation, img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+        `)
+    }
+}
 function generateTilemapChests(){
     for(let tileLocation of tiles.getTilesByType(assets.tile`chestTileSpawn`)){
         createChest(tileLocation)
@@ -3472,6 +3530,27 @@ function generateTilemapChests(){
             . . . . . . . . . . . . . . . .
         `)
     }
+}
+function createKey(tileLocation: tiles.Location){
+    let keySprite: Sprite = sprites.create(img`
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . 5 5 5 5 . . .
+        . . . 5 5 5 5 5 5 5 . . 5 . . .
+        . . . 5 . 5 . 5 . 5 . . 5 . . .
+        . . . 5 . 5 . . . 5 5 5 5 . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+    `, SpriteKind.Key)
+    tiles.placeOnTile(keySprite, tileLocation)
 }
 function createChest(tileLocation: tiles.Location){
     let chestSprite: Sprite = sprites.create(img`
@@ -3560,21 +3639,33 @@ function createChestCollectibles(sprite: Sprite){
         img``,
     ], Math.randomRange(75, 125), true)
     collectibleSprite.setPosition(sprite.x, sprite.y)
-    collectibleSprite.setVelocity(Math.randomRange(-100, 100), Math.randomRange(-150, -100))
+    collectibleSprite.setVelocity(Math.randomRange(-50, 50), Math.randomRange(-125, -80))
     sprites.setDataNumber(collectibleSprite, "velocityY", collectibleSprite.vy)
+    sprites.setDataNumber(collectibleSprite, "velocityX", collectibleSprite.vx)
     collectibleSprite.ay = 200
-    collectibleSprite.fx = 10
+    // collectibleSprite.fx = 20
     collectibleSprite.setFlag(SpriteFlag.GhostThroughSprites, true)
+    collectibleSprite.lifespan = 5000
+
+    timer.after(750, function() {
+        collectibleSprite.setFlag(SpriteFlag.GhostThroughSprites, false)
+    })
 }
 scene.onHitWall(SpriteKind.Collectible, function(sprite, tileLocation){
     if(sprite.isHittingTile(CollisionDirection.Bottom)){
         if (Math.abs(sprites.readDataNumber(sprite, "velocityY"))  < 25 ){
-            sprite.vy = 0
+            sprite.setVelocity(0, 0)
             return
         }
-        sprite.vy = (0.75) * sprites.readDataNumber(sprite, "velocityY")
+        sprite.vy = (0.5) * sprites.readDataNumber(sprite, "velocityY")
+        sprite.vx = (0.5) * sprites.readDataNumber(sprite, "velocityX")
+
         sprites.setDataNumber(sprite, "velocityY", sprite.vy)
-        
+        sprites.setDataNumber(sprite, "velocityX", sprite.vx)
+    }
+    if(sprite.isHittingTile(CollisionDirection.Left) || sprite.isHittingTile(CollisionDirection.Right)){
+        sprites.setDataNumber(sprite, "velocityX", sprite.vx)
+        sprite.vx = (-1)*sprites.readDataNumber(sprite, "velocityX")
     }
 })
 
@@ -3684,6 +3775,14 @@ game.onUpdate(function(){
 })
 
 // Game Update for Main game
+game.onUpdate(function(){
+    for(let sprite of sprites.allOfKind(SpriteKind.Key)){
+        sprite.y += (0.5)*Math.sin(delta)
+    }
+    delta += 0.125
+    delta = delta % 1000
+})
+
 game.onUpdate(function() {
     // console.log(currentLevel)
     if(levelSelect){
