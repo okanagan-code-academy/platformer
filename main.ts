@@ -2703,7 +2703,7 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Chest, function(sprite, otherSpr
         . b b . . . . . . . . . . b b .
     `)
     otherSprite.setKind(SpriteKind.EmptyChest)
-    let amount: number = Math.randomRange(4, 50)
+    let amount: number = Math.randomRange(15, 30)
     while(amount > 0){
         createChestCollectibles(otherSprite)
         amount--
@@ -3550,6 +3550,7 @@ function createKey(tileLocation: tiles.Location){
         . . . . . . . . . . . . . . . .
         . . . . . . . . . . . . . . . .
     `, SpriteKind.Key)
+    sprites.setDataNumber(keySprite, "delta", Math.randomRange(0, 12))
     tiles.placeOnTile(keySprite, tileLocation)
 }
 function createChest(tileLocation: tiles.Location){
@@ -3777,10 +3778,12 @@ game.onUpdate(function(){
 // Game Update for Main game
 game.onUpdate(function(){
     for(let sprite of sprites.allOfKind(SpriteKind.Key)){
-        sprite.y += (0.5)*Math.sin(delta)
+        sprite.y += (0.5)*Math.sin(sprites.readDataNumber(sprite, "delta") + delta)
+        
     }
     delta += 0.125
     delta = delta % 1000
+    
 })
 
 game.onUpdate(function() {
