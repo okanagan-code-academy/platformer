@@ -16,10 +16,13 @@ namespace SpriteKind {
     export const Chest = SpriteKind.create()
     export const EmptyChest = SpriteKind.create()
     export const Key = SpriteKind.create()
+    export const Shop = SpriteKind.create()
 }
 
 let currentLevel: number = -1
 let keysAmount: number = 0
+let playerInventoryList: Sprite[] = []
+let menuSprite: miniMenu.MenuSprite = null
 let maxLevel : number = 0
 let currentWorld: number = 0
 let maxWorld : number = 0
@@ -699,8 +702,48 @@ function onStart() {
     generateTilemapChests()
     generateTilemapKeys()
     createPlayer()
+    createShopSprite(tiles.getTileLocation(17, 11))
 }
 onStart()
+
+function createShopSprite(tileLocation: tiles.Location){
+    let shopSprite: Sprite = sprites.create(img`
+        ...bbbbbbbbbb...
+        ..b1111111111b..
+        .b111111111111b.
+        .b111111111111b.
+        .bddccccccccddb.
+        .bdc66666666cdb.
+        .bdc61d66666cdb.
+        .bdc6d666666cdb.
+        .bdc66666666cdb.
+        .bdc66666666cdb.
+        .bdc66666666cdb.
+        .bddccccccccddb.
+        .cbbbbbbbbbbbbc.
+        fccccccccccccccf
+        fbbbbbbbbbbbbbbf
+        fbcdddddddddddbf
+        fbcbbbbbbbbbbcbf
+        fbcbbbbbbbbbbcbf
+        fbccccccccccccbf
+        fbbbbbbbbbbbbbbf
+        fbffffffffffffbf
+        ffffffffffffffff
+    `, SpriteKind.Shop)
+    tiles.placeOnTile(shopSprite, tileLocation)
+
+    spriteutils.onSpriteUpdateInterval(shopSprite, 100, function(sprite){
+        if(menuSprite == null){
+            return
+        }
+        let distanceToPlayer: number = spriteutils.distanceBetween(shopSprite, playerSprite)
+        if(distanceToPlayer > 48){
+            menuSprite.close()
+            menuSprite = null
+        }
+    })
+}
 
 function createLevelSelect(){
     levelSelectSprite = sprites.create(img`
@@ -2718,6 +2761,48 @@ function checkCollectedChestAmount(){
         }
     }
 }
+sprites.onOverlap(SpriteKind.Player, SpriteKind.Shop, function(sprite, otherSprite){
+    if(menuSprite){
+        return
+    }
+    menuSprite = miniMenu.createMenu(miniMenu.createMenuItem("50", powerUpObject["image"][0]), miniMenu.createMenuItem("100", powerUpObject["image"][1]))
+    menuSprite.setMenuStyleProperty(miniMenu.MenuStyleProperty.Rows, 3)
+    menuSprite.setMenuStyleProperty(miniMenu.MenuStyleProperty.Columns, 1)
+    menuSprite.setMenuStyleProperty(miniMenu.MenuStyleProperty.Border, 1)
+    menuSprite.setMenuStyleProperty(miniMenu.MenuStyleProperty.BorderColor, 15)
+    menuSprite.setStyleProperty(miniMenu.StyleKind.DefaultAndSelected, miniMenu.StyleProperty.IconOnly, 1)
+    menuSprite.setMenuStyleProperty(miniMenu.MenuStyleProperty.Width, 60)
+    menuSprite.setMenuStyleProperty(miniMenu.MenuStyleProperty.Height, 50)
+    menuSprite.setPosition(scene.cameraProperty(CameraProperty.X), scene.cameraProperty(CameraProperty.Y))
+    menuSprite.setTitle("Cost: 50")
+    menuSprite.onSelectionChanged(function(selection, selectedIndex){
+        menuSprite.setTitle(selection)
+    })
+    menuSprite.onButtonPressed(controller.B, function(selection, selectedIndex){
+        if(selectedIndex < powerUpObject["image"].length){
+            if(info.score() < parseFloat(selection)){
+                playerSprite.sayText("I need more coins", 1000)
+                return
+            }
+            info.changeScoreBy(-parseFloat(selection))
+            playerInventoryList.push(sprites.create(powerUpObject["image"][selectedIndex], powerUpObject["kind"][selectedIndex]))
+            playerSprite.sayText(playerInventoryList.length, 1000)
+            
+        }
+    })
+})
+
+controller.player2.A.onEvent(ControllerButtonEvent.Pressed, function() {
+    if(playerInventoryList.length <= 0){
+        playerSprite.sayText("I have no items", 1000)
+        return
+    }
+    let powerUpSprite: Sprite = playerInventoryList.removeAt(0)
+    powerUpSprite.setPosition(playerSprite.x, playerSprite.y - 24)
+    powerUpSprite.ay = 250
+    playerSprite.sayText(playerInventoryList.length, 1000)
+})
+
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Key, function(sprite, otherSprite){
     otherSprite.destroy()
     keysAmount++
