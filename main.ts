@@ -6,6 +6,7 @@ namespace SpriteKind {
     export const ShootPower = SpriteKind.create()
     export const ShrinkPower = SpriteKind.create()
     export const BatPower = SpriteKind.create()
+    export const HeartPower = SpriteKind.create()
     export const Selector = SpriteKind.create()
     export const Arrow = SpriteKind.create()
     export const Indicator = SpriteKind.create()
@@ -17,6 +18,7 @@ namespace SpriteKind {
     export const EmptyChest = SpriteKind.create()
     export const Key = SpriteKind.create()
     export const Shop = SpriteKind.create()
+    export const Switch = SpriteKind.create()
 }
 
 let currentLevel: number = -1
@@ -39,6 +41,7 @@ let index: number = 0
 
 let isFalling: boolean = false
 let levelSelect: boolean = false
+
 
 let worldLevelsList: tiles.TileMapData[][] = [
         [
@@ -681,6 +684,8 @@ function generateTilemapEnemies(){
 }
 function onStart() {
     keysAmount = 0
+    info.setLife(5)
+
     sprites.destroyAllSpritesOfKind(SpriteKind.Collectible)
     sprites.destroyAllSpritesOfKind(SpriteKind.GrowPower)
     sprites.destroyAllSpritesOfKind(SpriteKind.ShootPower)
@@ -699,12 +704,60 @@ function onStart() {
     }
     generateTilemapEnemies()
     generateTilemapCollectibles()
+    generateTilemapSwitchWall()
     generateTilemapChests()
     generateTilemapKeys()
+    generateTilemapShop()
     createPlayer()
-    createShopSprite(tiles.getTileLocation(17, 11))
 }
+
 onStart()
+
+
+function createSwitchWall(switchTile: tiles.Location, wallTile: tiles.Location){
+    let switchSprite: Sprite = sprites.create(img`
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . 2 2 2 . . . . . . . . .
+        . . . . 2 2 2 . . . . . . . . .
+        . . . . . 4 . . . . . . . . . .
+        . . . . . 4 . . . . . . . . . .
+        . . . . . 4 . . . . . . . . . .
+        c c c c b 4 d d d d b c c c c c
+        c c c c b b b b b b b c c c c c
+        c c c c c c c c c c c c c c c c
+    `, SpriteKind.Switch)
+    let wallSprite: Sprite = sprites.create(img`
+        . . f . . f . . f . . f . . f .
+        c c c c c c c c c c c c c c c c
+        . . f . . f . . f . . f . . f .
+        . . f . . f . . f . . f . . f .
+        c c c c c c c c c c c c c c c c
+        . . f . . f . . f . . f . . f .
+        . . f . . f . . f . . f . . f .
+        c c c c c c c c c c c c c c c c
+        . . f . . f . . f . . f . . f .
+        . . f . . f . . f . . f . . f .
+        c c c c c c c c c c c c c c c c
+        . . f . . f . . f . . f . . f .
+        . . f . . f . . f . . f . . f .
+        c c c c c c c c c c c c c c c c
+        . . f . . f . . f . . f . . f .
+        . . f . . f . . f . . f . . f .
+    `, SpriteKind.Tile)
+
+    tiles.placeOnTile(switchSprite, switchTile)
+    tiles.placeOnTile(wallSprite, wallTile)
+
+    sprites.setDataSprite(switchSprite, "myWall", wallSprite)
+}
+
 
 function createShopSprite(tileLocation: tiles.Location){
     let shopSprite: Sprite = sprites.create(img`
@@ -1238,12 +1291,32 @@ let powerUpObject = {
             . . . . . . . . . . . . . . . .
             . . . . . . . . . . . . . . . .
         `,
+        img`
+            . . . . . . . . . . . . . . . .
+            . . f f f f f f . f f f f f f .
+            . f f 3 3 3 3 f f f 3 3 3 3 f f
+            . f 3 3 3 3 3 3 f 3 3 3 3 3 3 f
+            . f 3 3 3 3 3 3 3 3 1 1 1 3 3 f
+            . f 3 3 3 3 3 3 3 3 1 1 1 3 3 f
+            . f 3 3 3 3 3 b b b 1 1 1 3 3 f
+            . f 3 3 3 3 b b b b b 3 3 3 3 f
+            . f f 3 3 b b b b b b b 3 3 f f
+            . . f f 3 b b b b b b b 3 f f .
+            . . . f f b b b b b b b f f . .
+            . . . . f f b b b b b f f . . .
+            . . . . . f f b b b f f . . . .
+            . . . . . . f f b f f . . . . .
+            . . . . . . . f f f . . . . . .
+            . . . . . . . . . . . . . . . .
+        `,
+        
         ],
     "kind" : [
         SpriteKind.GrowPower,
         SpriteKind.ShootPower,
         SpriteKind.ShrinkPower,
         SpriteKind.BatPower,
+        SpriteKind.HeartPower,
     ],
     "scale" : [
         0.75,
@@ -1252,6 +1325,22 @@ let powerUpObject = {
         0.75,
     ]
 }
+
+let menuItemList: miniMenu.MenuItem[] = [
+    miniMenu.createMenuItem("Grow Power", powerUpObject["image"][0]),
+    miniMenu.createMenuItem("Shoot Power", powerUpObject["image"][1]),
+    miniMenu.createMenuItem("Shrink Power", powerUpObject["image"][2]),
+    miniMenu.createMenuItem("Bat Power", powerUpObject["image"][3]),
+    miniMenu.createMenuItem("Heart Power", powerUpObject["image"][4]),
+]
+let menuItemCostList: number[] = [
+    150,
+    200,
+    75,
+    400,
+    1000,
+]
+
 // A function to create a Powerup
 function createPowerUp(powerUpType: number, targetLocation: tiles.Location){
     let powerUpSprite: Sprite = sprites.create(powerUpObject["image"][powerUpType], powerUpObject["kind"][powerUpType])
@@ -1729,6 +1818,7 @@ function destroySprite(sprite: Sprite, velocityX: number, velocityY: number, cam
     sprite.setFlag(SpriteFlag.Ghost, true)
     sprites.destroy(sprite, effects.none, 1000)
     scene.cameraShake(cameraShakeStrength, 500)
+    info.changeLifeBy(-1)
     music.play(music.createSoundEffect(WaveShape.Noise, 3321, 958, 255, 0, 150, SoundExpressionEffect.Warble, InterpolationCurve.Curve), music.PlaybackMode.InBackground)
 }
 
@@ -2718,6 +2808,12 @@ function createPlayerJumpingAnimation(){
 }
 
 // player, projectile, and enemy overlap events
+sprites.onOverlap(SpriteKind.Player, SpriteKind.Switch, function(sprite, otherSprite){
+    let wallSprite = sprites.readDataSprite(otherSprite, "myWall")
+    tiles.setWallAt(wallSprite.tilemapLocation(), false)
+    wallSprite.destroy()
+    otherSprite.destroy()
+})
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Collectible, function(sprite, otherSprite){
     sprites.destroy(otherSprite)
     info.changeScoreBy(5)
@@ -2765,30 +2861,32 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Shop, function(sprite, otherSpri
     if(menuSprite){
         return
     }
-    menuSprite = miniMenu.createMenu(miniMenu.createMenuItem("50", powerUpObject["image"][0]), miniMenu.createMenuItem("100", powerUpObject["image"][1]))
+    menuSprite = miniMenu.createMenuFromArray(menuItemList)
     menuSprite.setMenuStyleProperty(miniMenu.MenuStyleProperty.Rows, 3)
     menuSprite.setMenuStyleProperty(miniMenu.MenuStyleProperty.Columns, 1)
     menuSprite.setMenuStyleProperty(miniMenu.MenuStyleProperty.Border, 1)
     menuSprite.setMenuStyleProperty(miniMenu.MenuStyleProperty.BorderColor, 15)
-    menuSprite.setStyleProperty(miniMenu.StyleKind.DefaultAndSelected, miniMenu.StyleProperty.IconOnly, 1)
-    menuSprite.setMenuStyleProperty(miniMenu.MenuStyleProperty.Width, 60)
-    menuSprite.setMenuStyleProperty(miniMenu.MenuStyleProperty.Height, 50)
+    menuSprite.setStyleProperty(miniMenu.StyleKind.DefaultAndSelected, miniMenu.StyleProperty.IconTextSpacing, 1)
+    menuSprite.setMenuStyleProperty(miniMenu.MenuStyleProperty.Width, 90)
+    menuSprite.setMenuStyleProperty(miniMenu.MenuStyleProperty.Height, 80)
     menuSprite.setPosition(scene.cameraProperty(CameraProperty.X), scene.cameraProperty(CameraProperty.Y))
     menuSprite.setTitle("Cost: 50")
     menuSprite.onSelectionChanged(function(selection, selectedIndex){
-        menuSprite.setTitle(selection)
+        
+        menuSprite.setTitle("Cost: " + menuItemCostList[selectedIndex].toString())
     })
     menuSprite.onButtonPressed(controller.B, function(selection, selectedIndex){
-        if(selectedIndex < powerUpObject["image"].length){
-            if(info.score() < parseFloat(selection)){
-                playerSprite.sayText("I need more coins", 1000)
-                return
-            }
-            info.changeScoreBy(-parseFloat(selection))
-            playerInventoryList.push(sprites.create(powerUpObject["image"][selectedIndex], powerUpObject["kind"][selectedIndex]))
-            playerSprite.sayText(playerInventoryList.length, 1000)
-            
+        if(info.score() < menuItemCostList[selectedIndex]){
+            playerSprite.sayText("I need more coins", 1000)
+            return
+        } else if(playerInventoryList.length >= 3){
+            playerSprite.sayText("My Inventory is full", 1000)
+            return
         }
+        info.changeScoreBy(-menuItemCostList[selectedIndex])
+        playerInventoryList.push(sprites.create(powerUpObject["image"][selectedIndex], powerUpObject["kind"][selectedIndex]))
+        playerSprite.sayText(playerInventoryList.length, 1000)
+            
     })
 })
 
@@ -2816,7 +2914,7 @@ sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function(sprite, othe
 })
 sprites.onOverlap(SpriteKind.EnemyProjectile, SpriteKind.Player, function(sprite, otherSprite){
     sprite.destroy()
-    destroySprite(sprite, 0, -70, 8)
+    destroySprite(otherSprite, 0, -70, 8)
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function(sprite, otherSprite){
     if(sprite.bottom < otherSprite.y){
@@ -2947,7 +3045,6 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.BatPower, function (sprite, othe
     sprites.setDataBoolean(sprite, "BatPower", true)
 
 })
-
 
 function createBatAnimations(){
     // Moving animations
@@ -3545,7 +3642,79 @@ function createBatAnimations(){
             . . . f f f f f f f . . . . . .
         `,
     ], 100, characterAnimations.rule(Predicate.NotMoving, Predicate.FacingLeft, Predicate.HittingWallDown))
+}
 
+sprites.onOverlap(SpriteKind.Player, SpriteKind.HeartPower, function(sprite, otherSprite){
+    otherSprite.destroy()
+    info.changeLifeBy(1)
+})
+
+function generateTilemapSwitchWall(){
+    for(let i = 0; i < tiles.getTilesByType(assets.tile`switchSpawnTile`).length; i++){
+        let switchTile = tiles.getTilesByType(assets.tile`switchSpawnTile`)[i]
+        let wallTile = tiles.getTilesByType(assets.tile`removableWallSpawnTile`)[i]
+        createSwitchWall(switchTile, wallTile)
+        tiles.setTileAt(switchTile, img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+        `)
+        tiles.setTileAt(wallTile, img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+        `)
+    }
+}
+
+function generateTilemapShop(){
+    for(let tileLocation of tiles.getTilesByType(assets.tile`shopSpawnTile`)){
+        createShopSprite(tileLocation)
+        tiles.setTileAt(tileLocation, img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+        `)
+    }
 }
 function generateTilemapCollectibles(){
     for(let tileLocation of tiles.getTilesByType(assets.tile`collectibleSpawn`)){
