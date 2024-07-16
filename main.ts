@@ -21,7 +21,7 @@ namespace SpriteKind {
     export const Switch = SpriteKind.create()
 }
 
-let currentLevel: number = -1
+let currentLevel: number = 1
 let keysAmount: number = 0
 let playerInventoryList: Sprite[] = []
 let menuSprite: miniMenu.MenuSprite = null
@@ -784,6 +784,344 @@ function createShopSprite(tileLocation: tiles.Location){
         fbffffffffffffbf
         ffffffffffffffff
     `, SpriteKind.Shop)
+    animation.runImageAnimation(shopSprite, [
+        img`
+            ...bbbbbbbbbb...
+            ..b1111111111b..
+            .b111111111111b.
+            .b111111111111b.
+            .bddccccccccddb.
+            .bdcbbbbbbbbcdb.
+            .bdc77777777cdb.
+            .bdcbbbbbbbbcdb.
+            .bdc77777777cdb.
+            .bdcbbbbbbbbcdb.
+            .bdc77777777cdb.
+            .bddccccccccddb.
+            .cbbbbbbbbbbbbc.
+            fccccccccccccccf
+            fbbbbbbbbbbbbbbf
+            fbcdddddddddddbf
+            fbcbbbbbbbbbbcbf
+            fbcbbbbbbbbbbcbf
+            fbccccccccccccbf
+            fbbbbbbbbbbbbbbf
+            fbffffffffffffbf
+            ffffffffffffffff
+        `,
+        img`
+            ...bbbbbbbbbb...
+            ..b1111111111b..
+            .b111111111111b.
+            .b111111111111b.
+            .bddccccccccddb.
+            .bdc77777777cdb.
+            .bdcbbbbbbbbcdb.
+            .bdc77777777cdb.
+            .bdcbbbbbbbbcdb.
+            .bdc77777777cdb.
+            .bdcbbbbbbbbcdb.
+            .bddccccccccddb.
+            .cbbbbbbbbbbbbc.
+            fccccccccccccccf
+            fbbbbbbbbbbbbbbf
+            fbcdddddddddddbf
+            fbcbbbbbbbbbbcbf
+            fbcbbbbbbbbbbcbf
+            fbccccccccccccbf
+            fbbbbbbbbbbbbbbf
+            fbffffffffffffbf
+            ffffffffffffffff
+        `,
+        img`
+            ...bbbbbbbbbb...
+            ..b1111111111b..
+            .b111111111111b.
+            .b111111111111b.
+            .bddccccccccddb.
+            .bdc66666666cdb.
+            .bdc66666666cdb.
+            .bdc66766766cdb.
+            .bdc66666666cdb.
+            .bdc66777766cdb.
+            .bdc66666666cdb.
+            .bddccccccccddb.
+            .cbbbbbbbbbbbbc.
+            fccccccccccccccf
+            fbbbbbbbbbbbbbbf
+            fbcdddddddddddbf
+            fbcbbbbbbbbbbcbf
+            fbcbbbbbbbbbbcbf
+            fbccccccccccccbf
+            fbbbbbbbbbbbbbbf
+            fbffffffffffffbf
+            ffffffffffffffff
+        `,
+        img`
+            ...bbbbbbbbbb...
+            ..b1111111111b..
+            .b111111111111b.
+            .b111111111111b.
+            .bddccccccccddb.
+            .bdc66666666cdb.
+            .bdc66666666cdb.
+            .bdc66766766cdb.
+            .bdc66666666cdb.
+            .bdc66777766cdb.
+            .bdc66666666cdb.
+            .bddccccccccddb.
+            .cbbbbbbbbbbbbc.
+            fccccccccccccccf
+            fbbbbbbbbbbbbbbf
+            fbcdddddddddddbf
+            fbcbbbbbbbbbbcbf
+            fbcbbbbbbbbbbcbf
+            fbccccccccccccbf
+            fbbbbbbbbbbbbbbf
+            fbffffffffffffbf
+            ffffffffffffffff
+        `,
+        img`
+            ...bbbbbbbbbb...
+            ..b1111111111b..
+            .b111111111111b.
+            .b111111111111b.
+            .bddccccccccddb.
+            .bdc66666666cdb.
+            .bdc66666666cdb.
+            .bdc66766766cdb.
+            .bdc66666666cdb.
+            .bdc66777766cdb.
+            .bdc66666666cdb.
+            .bddccccccccddb.
+            .cbbbbbbbbbbbbc.
+            fccccccccccccccf
+            fbbbbbbbbbbbbbbf
+            fbcdddddddddddbf
+            fbcbbbbbbbbbbcbf
+            fbcbbbbbbbbbbcbf
+            fbccccccccccccbf
+            fbbbbbbbbbbbbbbf
+            fbffffffffffffbf
+            ffffffffffffffff
+        `,
+        img`
+            ...bbbbbbbbbb...
+            ..b1111111111b..
+            .b111111111111b.
+            .b111111111111b.
+            .bddccccccccddb.
+            .bdcbbbbbbbbcdb.
+            .bdc77777777cdb.
+            .bdcbbbbbbbbcdb.
+            .bdc77777777cdb.
+            .bdcbbbbbbbbcdb.
+            .bdc77777777cdb.
+            .bddccccccccddb.
+            .cbbbbbbbbbbbbc.
+            fccccccccccccccf
+            fbbbbbbbbbbbbbbf
+            fbcdddddddddddbf
+            fbcbbbbbbbbbbcbf
+            fbcbbbbbbbbbbcbf
+            fbccccccccccccbf
+            fbbbbbbbbbbbbbbf
+            fbffffffffffffbf
+            ffffffffffffffff
+        `,
+        img`
+            ...bbbbbbbbbb...
+            ..b1111111111b..
+            .b111111111111b.
+            .b111111111111b.
+            .bddccccccccddb.
+            .bdc77777777cdb.
+            .bdcbbbbbbbbcdb.
+            .bdc77777777cdb.
+            .bdcbbbbbbbbcdb.
+            .bdc77777777cdb.
+            .bdcbbbbbbbbcdb.
+            .bddccccccccddb.
+            .cbbbbbbbbbbbbc.
+            fccccccccccccccf
+            fbbbbbbbbbbbbbbf
+            fbcdddddddddddbf
+            fbcbbbbbbbbbbcbf
+            fbcbbbbbbbbbbcbf
+            fbccccccccccccbf
+            fbbbbbbbbbbbbbbf
+            fbffffffffffffbf
+            ffffffffffffffff
+        `,
+        img`
+            ...bbbbbbbbbb...
+            ..b1111111111b..
+            .b111111111111b.
+            .b111111111111b.
+            .bddccccccccddb.
+            .bdcbbbbbbbbcdb.
+            .bdc77777777cdb.
+            .bdcbbbbbbbbcdb.
+            .bdc77777777cdb.
+            .bdcbbbbbbbbcdb.
+            .bdc77777777cdb.
+            .bddccccccccddb.
+            .cbbbbbbbbbbbbc.
+            fccccccccccccccf
+            fbbbbbbbbbbbbbbf
+            fbcdddddddddddbf
+            fbcbbbbbbbbbbcbf
+            fbcbbbbbbbbbbcbf
+            fbccccccccccccbf
+            fbbbbbbbbbbbbbbf
+            fbffffffffffffbf
+            ffffffffffffffff
+        `,
+        img`
+            ...bbbbbbbbbb...
+            ..b1111111111b..
+            .b111111111111b.
+            .b111111111111b.
+            .bddccccccccddb.
+            .bdc77777777cdb.
+            .bdcbbbbbbbbcdb.
+            .bdc77777777cdb.
+            .bdcbbbbbbbbcdb.
+            .bdc77777777cdb.
+            .bdcbbbbbbbbcdb.
+            .bddccccccccddb.
+            .cbbbbbbbbbbbbc.
+            fccccccccccccccf
+            fbbbbbbbbbbbbbbf
+            fbcdddddddddddbf
+            fbcbbbbbbbbbbcbf
+            fbcbbbbbbbbbbcbf
+            fbccccccccccccbf
+            fbbbbbbbbbbbbbbf
+            fbffffffffffffbf
+            ffffffffffffffff
+        `,
+        img`
+            ...bbbbbbbbbb...
+            ..b1111111111b..
+            .b111111111111b.
+            .b111111111111b.
+            .bddccccccccddb.
+            .bdcbbbbbbbbcdb.
+            .bdc77777777cdb.
+            .bdcbbbbbbbbcdb.
+            .bdc77777777cdb.
+            .bdcbbbbbbbbcdb.
+            .bdc77777777cdb.
+            .bddccccccccddb.
+            .cbbbbbbbbbbbbc.
+            fccccccccccccccf
+            fbbbbbbbbbbbbbbf
+            fbcdddddddddddbf
+            fbcbbbbbbbbbbcbf
+            fbcbbbbbbbbbbcbf
+            fbccccccccccccbf
+            fbbbbbbbbbbbbbbf
+            fbffffffffffffbf
+            ffffffffffffffff
+        `,
+        img`
+            ...bbbbbbbbbb...
+            ..b1111111111b..
+            .b111111111111b.
+            .b111111111111b.
+            .bddccccccccddb.
+            .bdc77777777cdb.
+            .bdcbbbbbbbbcdb.
+            .bdc77777777cdb.
+            .bdcbbbbbbbbcdb.
+            .bdc77777777cdb.
+            .bdcbbbbbbbbcdb.
+            .bddccccccccddb.
+            .cbbbbbbbbbbbbc.
+            fccccccccccccccf
+            fbbbbbbbbbbbbbbf
+            fbcdddddddddddbf
+            fbcbbbbbbbbbbcbf
+            fbcbbbbbbbbbbcbf
+            fbccccccccccccbf
+            fbbbbbbbbbbbbbbf
+            fbffffffffffffbf
+            ffffffffffffffff
+        `,
+        img`
+            ...bbbbbbbbbb...
+            ..b1111111111b..
+            .b111111111111b.
+            .b111111111111b.
+            .bddccccccccddb.
+            .bdc66666666cdb.
+            .bdc66666666cdb.
+            .bdc66766766cdb.
+            .bdc66666666cdb.
+            .bdc66777766cdb.
+            .bdc66666666cdb.
+            .bddccccccccddb.
+            .cbbbbbbbbbbbbc.
+            fccccccccccccccf
+            fbbbbbbbbbbbbbbf
+            fbcdddddddddddbf
+            fbcbbbbbbbbbbcbf
+            fbcbbbbbbbbbbcbf
+            fbccccccccccccbf
+            fbbbbbbbbbbbbbbf
+            fbffffffffffffbf
+            ffffffffffffffff
+        `,
+        img`
+            ...bbbbbbbbbb...
+            ..b1111111111b..
+            .b111111111111b.
+            .b111111111111b.
+            .bddccccccccddb.
+            .bdc66666666cdb.
+            .bdc66666666cdb.
+            .bdc66766766cdb.
+            .bdc66666666cdb.
+            .bdc66777766cdb.
+            .bdc66666666cdb.
+            .bddccccccccddb.
+            .cbbbbbbbbbbbbc.
+            fccccccccccccccf
+            fbbbbbbbbbbbbbbf
+            fbcdddddddddddbf
+            fbcbbbbbbbbbbcbf
+            fbcbbbbbbbbbbcbf
+            fbccccccccccccbf
+            fbbbbbbbbbbbbbbf
+            fbffffffffffffbf
+            ffffffffffffffff
+        `,
+        img`
+            ...bbbbbbbbbb...
+            ..b1111111111b..
+            .b111111111111b.
+            .b111111111111b.
+            .bddccccccccddb.
+            .bdc66666666cdb.
+            .bdc67666766cdb.
+            .bdc66666666cdb.
+            .bdc66777666cdb.
+            .bdc67666766cdb.
+            .bdc66777666cdb.
+            .bddccccccccddb.
+            .cbbbbbbbbbbbbc.
+            fccccccccccccccf
+            fbbbbbbbbbbbbbbf
+            fbcdddddddddddbf
+            fbcbbbbbbbbbbcbf
+            fbcbbbbbbbbbbcbf
+            fbccccccccccccbf
+            fbbbbbbbbbbbbbbf
+            fbffffffffffffbf
+            ffffffffffffffff
+        `,
+    ], 50, true)
     tiles.placeOnTile(shopSprite, tileLocation)
 
     spriteutils.onSpriteUpdateInterval(shopSprite, 100, function(sprite){
@@ -1641,7 +1979,14 @@ scene.onHitWall(SpriteKind.Player, function(sprite, location){
     if(sprite.isHittingTile(CollisionDirection.Top)){
         if(tiles.tileAtLocationEquals(location, assets.tile`luckyTile`)){
             let targetLocation: tiles.Location = tiles.getTileLocation(location.column, location.row - 1)
-            createPowerUp(randint(0, powerUpObject["image"].length-1), targetLocation)
+            if(currentLevel == 0){
+                createPowerUp(0, targetLocation)
+            } else if (currentLevel == 1){
+                createPowerUp(2, targetLocation)
+            } else {
+                createPowerUp(randint(0, powerUpObject["image"].length - 1), targetLocation)
+            }
+            
             // createCollectible(targetLocation)
             // tiles.setTileAt(location, assets.tile`depletedTile`)
             hitPowerBox(img`
@@ -1798,22 +2143,22 @@ scene.onOverlapTile(SpriteKind.ShellEnemy, assets.tile`lavaTile`, function (spri
 
 // Player destroys after overlapping hazard tiles
 scene.onOverlapTile(SpriteKind.Player, assets.tile`bottomHazardTile`, function(sprite, location){
-    destroySprite(sprite, 0, -70, 8)
+    destroyPlayerSprite(sprite, 0, -70, 8)
 })
 scene.onOverlapTile(SpriteKind.Player, assets.tile`topHazardTile`, function (sprite, location) {
-    destroySprite(sprite, 0, 70, 8)
+    destroyPlayerSprite(sprite, 0, 70, 8)
 })
 scene.onOverlapTile(SpriteKind.Player, assets.tile`rightHazardTile`, function (sprite, location) {
-    destroySprite(sprite, -70, 0, 8)
+    destroyPlayerSprite(sprite, -70, 0, 8)
 })
 scene.onOverlapTile(SpriteKind.Player, assets.tile`leftHazardTile`, function (sprite, location) {
-    destroySprite(sprite, 70, 0, 8)
+    destroyPlayerSprite(sprite, 70, 0, 8)
 })
 scene.onOverlapTile(SpriteKind.Player, assets.tile`lavaTile`, function (sprite, location) {
-    destroySprite(sprite, 0, -70, 8)
+    destroyPlayerSprite(sprite, 0, -70, 8)
 })
 
-function destroySprite(sprite: Sprite, velocityX: number, velocityY: number, cameraShakeStrength: number){
+function destroyPlayerSprite(sprite: Sprite, velocityX: number, velocityY: number, cameraShakeStrength: number){
     sprite.setVelocity(velocityX, velocityY)
     sprite.setFlag(SpriteFlag.Ghost, true)
     sprites.destroy(sprite, effects.none, 1000)
@@ -2811,8 +3156,154 @@ function createPlayerJumpingAnimation(){
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Switch, function(sprite, otherSprite){
     let wallSprite = sprites.readDataSprite(otherSprite, "myWall")
     tiles.setWallAt(wallSprite.tilemapLocation(), false)
-    wallSprite.destroy()
-    otherSprite.destroy()
+    otherSprite.setImage(img`
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . 7 7 7 . . . . .
+        . . . . . . . . 7 7 7 . . . . .
+        . . . . . . . . . 4 . . . . . .
+        . . . . . . . . . 4 . . . . . .
+        . . . . . . . . . 4 . . . . . .
+        c c c c b d d d d 4 b c c c c c
+        c c c c b b b b b b b c c c c c
+        c c c c c c c c c c c c c c c c
+    `)
+    wallSprite.lifespan = 350
+    animation.runImageAnimation(wallSprite, [
+        img`
+            . . f . . f . . f . . f . . f .
+            . . f . . f . . f . . f . . f .
+            c c c c c c c c c c c c c c c c
+            . . f . . f . . f . . f . . f .
+            . . f . . f . . f . . f . . f .
+            c c c c c c c c c c c c c c c c
+            . . f . . f . . f . . f . . f .
+            . . f . . f . . f . . f . . f .
+            c c c c c c c c c c c c c c c c
+            . . f . . f . . f . . f . . f .
+            . . f . . f . . f . . f . . f .
+            c c c c c c c c c c c c c c c c
+            . . f . . f . . f . . f . . f .
+            . . f . . f . . f . . f . . f .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+        `,
+        img`
+            c c c c c c c c c c c c c c c c
+            . . f . . f . . f . . f . . f .
+            . . f . . f . . f . . f . . f .
+            c c c c c c c c c c c c c c c c
+            . . f . . f . . f . . f . . f .
+            . . f . . f . . f . . f . . f .
+            c c c c c c c c c c c c c c c c
+            . . f . . f . . f . . f . . f .
+            . . f . . f . . f . . f . . f .
+            c c c c c c c c c c c c c c c c
+            . . f . . f . . f . . f . . f .
+            . . f . . f . . f . . f . . f .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+        `,
+        img`
+            . . f . . f . . f . . f . . f .
+            c c c c c c c c c c c c c c c c
+            . . f . . f . . f . . f . . f .
+            . . f . . f . . f . . f . . f .
+            c c c c c c c c c c c c c c c c
+            . . f . . f . . f . . f . . f .
+            . . f . . f . . f . . f . . f .
+            c c c c c c c c c c c c c c c c
+            . . f . . f . . f . . f . . f .
+            . . f . . f . . f . . f . . f .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+        `,
+        img`
+            . . f . . f . . f . . f . . f .
+            . . f . . f . . f . . f . . f .
+            c c c c c c c c c c c c c c c c
+            . . f . . f . . f . . f . . f .
+            . . f . . f . . f . . f . . f .
+            c c c c c c c c c c c c c c c c
+            . . f . . f . . f . . f . . f .
+            . . f . . f . . f . . f . . f .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+        `,
+        img`
+            c c c c c c c c c c c c c c c c
+            . . f . . f . . f . . f . . f .
+            . . f . . f . . f . . f . . f .
+            c c c c c c c c c c c c c c c c
+            . . f . . f . . f . . f . . f .
+            . . f . . f . . f . . f . . f .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+        `,
+        img`
+            . . f . . f . . f . . f . . f .
+            c c c c c c c c c c c c c c c c
+            . . f . . f . . f . . f . . f .
+            . . f . . f . . f . . f . . f .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+        `,
+        img`
+            . . f . . f . . f . . f . . f .
+            . . f . . f . . f . . f . . f .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+        `,        
+    ], 50, false)
+    otherSprite.setFlag(SpriteFlag.Ghost, true)
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Collectible, function(sprite, otherSprite){
     sprites.destroy(otherSprite)
@@ -2914,7 +3405,7 @@ sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function(sprite, othe
 })
 sprites.onOverlap(SpriteKind.EnemyProjectile, SpriteKind.Player, function(sprite, otherSprite){
     sprite.destroy()
-    destroySprite(otherSprite, 0, -70, 8)
+    destroyPlayerSprite(otherSprite, 0, -70, 8)
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function(sprite, otherSprite){
     if(sprite.bottom < otherSprite.y){
@@ -2923,11 +3414,11 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function(sprite, otherSpr
         music.play(music.createSoundEffect(WaveShape.Triangle, 2430, 1, 255, 0, 400, SoundExpressionEffect.Warble, InterpolationCurve.Curve), music.PlaybackMode.InBackground)
         info.changeScoreBy(25)
     } else {
-        destroySprite(sprite, 0, -70, 8)
+        destroyPlayerSprite(sprite, 0, -70, 8)
     }
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.SpinEnemy, function(sprite, otherSprite){
-    destroySprite(sprite, 0, -70, 8)
+    destroyPlayerSprite(sprite, 0, -70, 8)
 })
 sprites.onOverlap(SpriteKind.Projectile, SpriteKind.MysteryEnemy, function(sprite, otherSprite){
     otherSprite.destroy(effects.disintegrate, 1000)
@@ -2943,7 +3434,7 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.MysteryEnemy, function(sprite, o
         info.changeScoreBy(25)
         createShellEnemy(otherSprite)
     } else {
-        destroySprite(sprite, 0, -70, 8)
+        destroyPlayerSprite(sprite, 0, -70, 8)
     }
 })
 sprites.onOverlap(SpriteKind.Projectile, SpriteKind.ShellEnemy, function(sprite, otherSprite){
@@ -2958,7 +3449,7 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.ShellEnemy, function(sprite, oth
         if(sprite.bottom < otherSprite.bottom){
             otherSprite.vx = 0
         } else {
-            destroySprite(sprite, 0, -70, 8)
+            destroyPlayerSprite(sprite, 0, -70, 8)
             return
         }
     } else {
