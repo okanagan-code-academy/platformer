@@ -21,7 +21,9 @@ namespace SpriteKind {
     export const Switch = SpriteKind.create()
 }
 
-let currentLevel: number = 1
+
+
+let currentLevel: number = 0
 let keysAmount: number = 0
 let playerInventoryList: Sprite[] = []
 let menuSprite: miniMenu.MenuSprite = null
@@ -686,9 +688,6 @@ function onStart() {
     keysAmount = 0
     info.setLife(5)
 
-    sprites.destroyAllSpritesOfKind(SpriteKind.Collectible)
-    sprites.destroyAllSpritesOfKind(SpriteKind.GrowPower)
-    sprites.destroyAllSpritesOfKind(SpriteKind.ShootPower)
     sprites.destroy(levelSelectSprite)
     sprites.destroy(arrowSprite)
     sprites.destroy(indicatorSprite)
@@ -696,6 +695,39 @@ function onStart() {
         createLevelSelect()
         return
     }
+    // scene.setBackgroundColor(9)
+    // if (currentLevel < 0 || currentLevel >= worldLevelsList[0].length) {
+    //     tiles.setTilemap(tilemap`test`)
+    // } else {
+    //     tiles.setTilemap(worldLevelsList[currentWorld][currentLevel])
+    // }
+    // generateTilemapEnemies()
+    // generateTilemapCollectibles()
+    // generateTilemapSwitchWall()
+    // generateTilemapChests()
+    // generateTilemapKeys()
+    // generateTilemapShop()
+    
+    createPlayer()
+    createLevel()
+    
+}
+function createLevel() {
+    let allSpriteKindsList = [
+        SpriteKind.Collectible,
+        SpriteKind.EnemyProjectile,
+        SpriteKind.SpinEnemy,
+        SpriteKind.MysteryEnemy,
+        SpriteKind.ShellEnemy,
+        SpriteKind.EmptyChest,
+        SpriteKind.Key,
+        SpriteKind.Shop,
+        SpriteKind.Switch,
+    ]
+    for(let spriteType of allSpriteKindsList){
+        sprites.destroyAllSpritesOfKind(spriteType)
+    }
+    // sprites.destroyAllSpritesOfKind()
     scene.setBackgroundColor(9)
     if (currentLevel < 0 || currentLevel >= worldLevelsList[0].length) {
         tiles.setTilemap(tilemap`test`)
@@ -708,7 +740,14 @@ function onStart() {
     generateTilemapChests()
     generateTilemapKeys()
     generateTilemapShop()
-    createPlayer()
+    
+    placePlayerOnTilemap()
+
+    
+}
+
+function placePlayerOnTilemap() {
+    tiles.placeOnRandomTile(playerSprite, assets.tile`spawnTile`)
 }
 
 onStart()
@@ -1530,7 +1569,6 @@ function createPlayer(){
     `, SpriteKind.Player)
     scene.cameraFollowSprite(playerSprite)
     resetPlayerPowerups()
-    tiles.placeOnRandomTile(playerSprite, assets.tile`spawnTile`)
 }
 function resetPlayerPowerups(){
     // stop any timers
@@ -1690,7 +1728,7 @@ function createPowerUp(powerUpType: number, targetLocation: tiles.Location){
     } else {
         direction = 1
     }
-    console.log(direction)
+    // console.log(direction)
     powerUpSprite.setVelocity(direction*Math.randomRange(25, 50), -100)
     sprites.setDataNumber(powerUpSprite, "speed", powerUpSprite.vx)
     tiles.placeOnTile(powerUpSprite, targetLocation)
@@ -1771,7 +1809,7 @@ function batPower() {
 }
 info.onCountdownEnd(function(){
     resetPlayerPowerups()
-    timer.after(10000, function() {
+    timer.after(5000, function() {
         if(!sprites.readDataBoolean(playerSprite, "ShrinkPower") && 
             !sprites.readDataBoolean(playerSprite, "GrowPower") &&
             !sprites.readDataBoolean(playerSprite, "ShootPower")){
@@ -1973,8 +2011,8 @@ scene.onHitWall(SpriteKind.Projectile, function(sprite, location){
 })
 scene.onHitWall(SpriteKind.Player, function(sprite, location){
     if(sprite.isHittingTile(CollisionDirection.Bottom)){
-        jumps = 1
         isFalling = false
+        jumps = 1
     }
     if(sprite.isHittingTile(CollisionDirection.Top)){
         if(tiles.tileAtLocationEquals(location, assets.tile`luckyTile`)){
@@ -1982,7 +2020,11 @@ scene.onHitWall(SpriteKind.Player, function(sprite, location){
             if(currentLevel == 0){
                 createPowerUp(0, targetLocation)
             } else if (currentLevel == 1){
+                createPowerUp(1, targetLocation)
+            } else if (currentLevel == 2) {
                 createPowerUp(2, targetLocation)
+            } else if (currentLevel == 3) {
+                createPowerUp(3, targetLocation)
             } else {
                 createPowerUp(randint(0, powerUpObject["image"].length - 1), targetLocation)
             }
@@ -2020,7 +2062,6 @@ scene.onHitWall(SpriteKind.Player, function(sprite, location){
                 return
             } else if(Math.randomRange(1, 100) < 5){
                 let targetLocation: tiles.Location = tiles.getTileLocation(location.column, location.row - 1)
-                createCollectible(targetLocation)
                 createCollectible(targetLocation)
                 hitPowerBox(img`
                     . . . . . . . . . . . . . . . .
@@ -2087,8 +2128,10 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`closedExitTile`, function (sp
     
 })
 scene.onOverlapTile(SpriteKind.Player, assets.tile`openExitTile`, function (sprite, location) {
-    game.gameOver(true)
+    currentLevel += 1
+    createLevel()
 
+    // game.gameOver(true)
     // levelSelect = true
     // maxLevel = currentLevel+1
     // sprite.destroy()
@@ -2097,26 +2140,26 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`openExitTile`, function (spri
 
 // Destroy power ups when they enter the lava
 scene.onOverlapTile(SpriteKind.GrowPower, assets.tile`lavaTile`, function (sprite, location) {
-    sprite.destroy(effects.fire)
+    sprite.destroy()
     music.play(music.createSoundEffect(WaveShape.Sine, 200, 825, 255, 0, 150, SoundExpressionEffect.Vibrato, InterpolationCurve.Linear), music.PlaybackMode.UntilDone)
 
 })
 scene.onOverlapTile(SpriteKind.ShootPower, assets.tile`lavaTile`, function (sprite, location) {
-    sprite.destroy(effects.fire)
+    sprite.destroy()
     music.play(music.createSoundEffect(WaveShape.Sine, 200, 825, 255, 0, 150, SoundExpressionEffect.Vibrato, InterpolationCurve.Linear), music.PlaybackMode.UntilDone)
 
 })
 scene.onOverlapTile(SpriteKind.ShrinkPower, assets.tile`lavaTile`, function (sprite, location) {
-    sprite.destroy(effects.fire)
+    sprite.destroy()
     music.play(music.createSoundEffect(WaveShape.Sine, 200, 825, 255, 0, 150, SoundExpressionEffect.Vibrato, InterpolationCurve.Linear), music.PlaybackMode.UntilDone)
 
 })
 scene.onOverlapTile(SpriteKind.BatPower, assets.tile`lavaTile`, function (sprite, location) {
-    sprite.destroy(effects.fire)
+    sprite.destroy()
     music.play(music.createSoundEffect(WaveShape.Sine, 200, 825, 255, 0, 150, SoundExpressionEffect.Vibrato, InterpolationCurve.Linear), music.PlaybackMode.UntilDone)
 })
 scene.onOverlapTile(SpriteKind.Collectible, assets.tile`lavaTile`, function (sprite, location) {
-    sprite.destroy(effects.fire)
+    sprite.destroy()
     music.play(music.createSoundEffect(WaveShape.Sine, 200, 825, 255, 0, 150, SoundExpressionEffect.Vibrato, InterpolationCurve.Linear), music.PlaybackMode.UntilDone)
 })
 
@@ -2163,7 +2206,6 @@ function destroyPlayerSprite(sprite: Sprite, velocityX: number, velocityY: numbe
     sprite.setFlag(SpriteFlag.Ghost, true)
     sprites.destroy(sprite, effects.none, 1000)
     scene.cameraShake(cameraShakeStrength, 500)
-    info.changeLifeBy(-1)
     music.play(music.createSoundEffect(WaveShape.Noise, 3321, 958, 255, 0, 150, SoundExpressionEffect.Warble, InterpolationCurve.Curve), music.PlaybackMode.InBackground)
 }
 
@@ -2171,7 +2213,10 @@ sprites.onDestroyed(SpriteKind.Player, function(sprite){
     if(levelSelect){
         return
     }
+    info.changeLifeBy(-1)
+
     createPlayer()
+    placePlayerOnTilemap()
 })
 
 function hitPowerBox(tileImage: Image, location: tiles.Location){
@@ -4536,8 +4581,11 @@ game.onUpdate(function() {
     if(levelSelect){
         return
     }
-    if(playerSprite.vy > 0){
-        isFalling = true
+    if (playerSprite.vy > 0 && !isFalling){
+        timer.after(200, function() {
+                isFalling = true
+        })
+        
     }
     // Changing direction of powerups when they reach a side wall
     changeDirectionX(SpriteKind.GrowPower)
