@@ -24,6 +24,7 @@ namespace SpriteKind {
 
 
 let currentLevel: number = -1
+let powerupTileCountList: number[] = []
 let keysAmount: number = 0
 let playerInventoryList: Sprite[] = []
 let menuSprite: miniMenu.MenuSprite = null
@@ -685,7 +686,6 @@ function generateTilemapEnemies(){
     }
 }
 function onStart() {
-    keysAmount = 0
     info.setLife(5)
 
     sprites.destroy(levelSelectSprite)
@@ -695,24 +695,15 @@ function onStart() {
         createLevelSelect()
         return
     }
-    // scene.setBackgroundColor(9)
-    // if (currentLevel < 0 || currentLevel >= worldLevelsList[0].length) {
-    //     tiles.setTilemap(tilemap`test`)
-    // } else {
-    //     tiles.setTilemap(worldLevelsList[currentWorld][currentLevel])
-    // }
-    // generateTilemapEnemies()
-    // generateTilemapCollectibles()
-    // generateTilemapSwitchWall()
-    // generateTilemapChests()
-    // generateTilemapKeys()
-    // generateTilemapShop()
+    
     
     createPlayer()
     createLevel()
     
 }
 function createLevel() {
+    keysAmount = 0
+
     let allSpriteKindsList = [
         SpriteKind.Collectible,
         SpriteKind.EnemyProjectile,
@@ -734,6 +725,9 @@ function createLevel() {
     } else {
         tiles.setTilemap(worldLevelsList[currentWorld][currentLevel])
     }
+
+
+
     generateTilemapEnemies()
     generateTilemapCollectibles()
     generateTilemapSwitchWall()
@@ -743,6 +737,12 @@ function createLevel() {
     
     placePlayerOnTilemap()
 
+    powerupTileCountList[0] = tiles.getTilesByType(assets.tile`growTile`).length
+    powerupTileCountList[1] = tiles.getTilesByType(assets.tile`shootTile`).length
+    powerupTileCountList[2] = tiles.getTilesByType(assets.tile`shrinkTile`).length
+    powerupTileCountList[3] = tiles.getTilesByType(assets.tile`batTile`).length
+    powerupTileCountList[4] = tiles.getTilesByType(assets.tile`heartTile`).length
+    powerupTileCountList[5] = tiles.getTilesByType(assets.tile`luckyTile`).length
     
 }
 
@@ -2221,6 +2221,26 @@ function hitPowerBox(tileImage: Image, location: tiles.Location){
 }
 sprites.onDestroyed(SpriteKind.Box, function(sprite){
     tiles.setTileAt(sprite.tilemapLocation(), assets.tile`depletedTile`)
+    let sum: number = 0
+    for(let value of powerupTileCountList){
+        sum += value
+    }
+    if(tiles.getTilesByType(assets.tile`depletedTile`).length == sum){
+        if(powerupTileCountList[0] > 0){
+            tiles.setTileAt(tiles.getTilesByType(assets.tile`depletedTile`)._pickRandom(), assets.tile`growTile`)
+        } else if (powerupTileCountList[1] > 0 ){
+            tiles.setTileAt(tiles.getTilesByType(assets.tile`depletedTile`)._pickRandom(), assets.tile`shootTile`)
+        } else if (powerupTileCountList[2] > 0) {
+            tiles.setTileAt(tiles.getTilesByType(assets.tile`depletedTile`)._pickRandom(), assets.tile`shrinkTile`)
+        } else if (powerupTileCountList[3] > 0) {
+            tiles.setTileAt(tiles.getTilesByType(assets.tile`depletedTile`)._pickRandom(), assets.tile`batTile`)
+        } else if (powerupTileCountList[4] > 0) {
+            tiles.setTileAt(tiles.getTilesByType(assets.tile`depletedTile`)._pickRandom(), assets.tile`heartTile`)
+        } else if (powerupTileCountList[5] > 0) {
+            tiles.setTileAt(tiles.getTilesByType(assets.tile`depletedTile`)._pickRandom(), assets.tile`luckyTile`)
+        }
+    }
+    
 })
 function createPlayerWalkingAnimation(){
     characterAnimations.loopFrames(playerSprite, [
@@ -4068,14 +4088,10 @@ game.onUpdate(function() {
     changeDirectionX(SpriteKind.ShootPower)
     changeDirectionX(SpriteKind.ShrinkPower)
     changeDirectionX(SpriteKind.BatPower)
+    changeDirectionX(SpriteKind.HeartPower)
     changeDirectionX(SpriteKind.Enemy)
     changeDirectionX(SpriteKind.MysteryEnemy)
     changeDirectionX(SpriteKind.ShellEnemy)
-
-
-    if(tiles.getTilesByType(assets.tile`luckyTile`).length <= 0) {
-        tiles.setTileAt(tiles.getTilesByType(assets.tile`depletedTile`)._pickRandom(), assets.tile`luckyTile`)
-    }
 
 })
 game.onUpdateInterval(1000, function() {
