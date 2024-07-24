@@ -19,12 +19,38 @@ namespace SpriteKind {
     export const Key = SpriteKind.create()
     export const Shop = SpriteKind.create()
     export const Switch = SpriteKind.create()
+    export const JumpPad = SpriteKind.create()
 }
 
 
 
 let currentLevel: number = -1
-let powerupTileCountList: number[] = []
+let powerupTileCountList = [
+    {
+        "asset" : assets.tile`growTile`,
+        "max_count" : 0,
+    },
+    {
+        "asset": assets.tile`shootTile`,
+        "max_count": 0,
+    },
+    {
+        "asset": assets.tile`shrinkTile`,
+        "max_count": 0,
+    },
+    {
+        "asset": assets.tile`batTile`,
+        "max_count": 0,
+    },
+    {
+        "asset": assets.tile`heartTile`,
+        "max_count": 0,
+    },
+    {
+        "asset": assets.tile`luckyTile`,
+        "max_count": 0,
+    },
+]
 let keysAmount: number = 0
 let playerInventoryList: Sprite[] = []
 let menuSprite: miniMenu.MenuSprite = null
@@ -54,6 +80,9 @@ let worldLevelsList: tiles.TileMapData[][] = [
             tilemap`level4`,
             tilemap`level5`,
             tilemap`level6`,
+            tilemap`level7`,
+            tilemap`level8`,
+            tilemap`level9`
         ],
     ]
 
@@ -714,6 +743,12 @@ function createLevel() {
         SpriteKind.Key,
         SpriteKind.Shop,
         SpriteKind.Switch,
+        SpriteKind.GrowPower,
+        SpriteKind.ShootPower,
+        SpriteKind.ShrinkPower,
+        SpriteKind.BatPower,
+        SpriteKind.HeartPower,
+        SpriteKind.JumpPad
     ]
     for(let spriteType of allSpriteKindsList){
         sprites.destroyAllSpritesOfKind(spriteType)
@@ -734,15 +769,16 @@ function createLevel() {
     generateTilemapChests()
     generateTilemapKeys()
     generateTilemapShop()
+    generateTilemapJumpPads()
     
     placePlayerOnTilemap()
 
-    powerupTileCountList[0] = tiles.getTilesByType(assets.tile`growTile`).length
-    powerupTileCountList[1] = tiles.getTilesByType(assets.tile`shootTile`).length
-    powerupTileCountList[2] = tiles.getTilesByType(assets.tile`shrinkTile`).length
-    powerupTileCountList[3] = tiles.getTilesByType(assets.tile`batTile`).length
-    powerupTileCountList[4] = tiles.getTilesByType(assets.tile`heartTile`).length
-    powerupTileCountList[5] = tiles.getTilesByType(assets.tile`luckyTile`).length
+    powerupTileCountList[0]["max_count"] = tiles.getTilesByType(assets.tile`growTile`).length
+    powerupTileCountList[1]["max_count"] = tiles.getTilesByType(assets.tile`shootTile`).length
+    powerupTileCountList[2]["max_count"] = tiles.getTilesByType(assets.tile`shrinkTile`).length
+    powerupTileCountList[3]["max_count"] = tiles.getTilesByType(assets.tile`batTile`).length
+    powerupTileCountList[4]["max_count"] = tiles.getTilesByType(assets.tile`heartTile`).length
+    powerupTileCountList[5]["max_count"] = tiles.getTilesByType(assets.tile`luckyTile`).length
     
 }
 
@@ -751,6 +787,28 @@ function placePlayerOnTilemap() {
 }
 
 onStart()
+
+function createJumpPad(tileLocation: tiles.Location){
+    let jumpPadSprite: Sprite = sprites.create(img`
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+        2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+        2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+        c c c c c c c c c c c c c c c c
+        c c c c c c c c c c c c c c c c
+        c c c c c c c c c c c c c c c c
+    `, SpriteKind.JumpPad)
+    tiles.placeOnTile(jumpPadSprite, tileLocation)
+}
 
 
 function createSwitchWall(switchTile: tiles.Location, wallTile: tiles.Location){
@@ -2223,22 +2281,17 @@ sprites.onDestroyed(SpriteKind.Box, function(sprite){
     tiles.setTileAt(sprite.tilemapLocation(), assets.tile`depletedTile`)
     let sum: number = 0
     for(let value of powerupTileCountList){
-        sum += value
+        sum += value["max_count"]
     }
-    if(tiles.getTilesByType(assets.tile`depletedTile`).length == sum){
-        if(powerupTileCountList[0] > 0){
-            tiles.setTileAt(tiles.getTilesByType(assets.tile`depletedTile`)._pickRandom(), assets.tile`growTile`)
-        } else if (powerupTileCountList[1] > 0 ){
-            tiles.setTileAt(tiles.getTilesByType(assets.tile`depletedTile`)._pickRandom(), assets.tile`shootTile`)
-        } else if (powerupTileCountList[2] > 0) {
-            tiles.setTileAt(tiles.getTilesByType(assets.tile`depletedTile`)._pickRandom(), assets.tile`shrinkTile`)
-        } else if (powerupTileCountList[3] > 0) {
-            tiles.setTileAt(tiles.getTilesByType(assets.tile`depletedTile`)._pickRandom(), assets.tile`batTile`)
-        } else if (powerupTileCountList[4] > 0) {
-            tiles.setTileAt(tiles.getTilesByType(assets.tile`depletedTile`)._pickRandom(), assets.tile`heartTile`)
-        } else if (powerupTileCountList[5] > 0) {
-            tiles.setTileAt(tiles.getTilesByType(assets.tile`depletedTile`)._pickRandom(), assets.tile`luckyTile`)
+    let currentPowerupTiles = powerupTileCountList.filter(function(value, index){
+        if(value["max_count"] > 0){
+            return true
+        } else {
+            return false
         }
+    })
+    if(tiles.getTilesByType(assets.tile`depletedTile`).length == sum){
+        tiles.setTileAt(tiles.getTilesByType(assets.tile`depletedTile`)._pickRandom(), currentPowerupTiles._pickRandom()["asset"])
     }
     
 })
@@ -2694,6 +2747,180 @@ function createPlayerJumpingAnimation(){
 }
 
 // player, projectile, and enemy overlap events
+sprites.onOverlap(SpriteKind.Player, SpriteKind.JumpPad, function(sprite, otherSprite){
+    sprite.vy = -300
+    animation.runImageAnimation(otherSprite, [
+        img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            1 1 1 1 1 . . . . . 1 1 1 1 1 1
+            . . . . . 1 1 1 1 1 . . . . . .
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+        `,
+        img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            1 1 1 1 . . . . . . . . 1 1 1 1
+            . . . . 1 1 1 . . 1 1 1 . . . .
+            . . . . . . . 1 1 . . . . . . .
+            . . . . 1 1 1 . . 1 1 1 . . . .
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+        `,
+        img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            1 1 . . . . . . . . . . . . 1 1
+            . . 1 1 . . . . . . . . 1 1 . .
+            . . . . 1 1 . . . . 1 1 . . . .
+            . . . . . . 1 1 1 1 . . . . . .
+            . . . . 1 1 . . . . 1 1 . . . .
+            . . 1 1 . . . . . . . . 1 1 . .
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+        `,
+        img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            1 1 . . . . . . . . . . . . 1 1
+            . . 1 1 . . . . . . . . 1 1 . .
+            . . . . 1 . . . . . . 1 . . . .
+            . . . . . 1 1 . . 1 1 . . . . .
+            . . . . . . . 1 1 . . . . . . .
+            . . . . . 1 1 . . 1 1 . . . . .
+            . . . . 1 . . . . . . 1 . . . .
+            . . 1 1 . . . . . . . . 1 1 . .
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+        `,
+    ], 50, false)
+    otherSprite.setFlag(SpriteFlag.Ghost, true)
+    pause(1500)
+    animation.runImageAnimation(otherSprite, [
+        img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            1 1 . . . . . . . . . . . . 1 1
+            . . 1 1 . . . . . . . . 1 1 . .
+            . . . . 1 . . . . . . 1 . . . .
+            . . . . . 1 1 . . 1 1 . . . . .
+            . . . . . . . 1 1 . . . . . . .
+            . . . . . 1 1 . . 1 1 . . . . .
+            . . . . 1 . . . . . . 1 . . . .
+            . . 1 1 . . . . . . . . 1 1 . .
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+        `,
+        img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            1 1 . . . . . . . . . . . . 1 1
+            . . 1 1 . . . . . . . . 1 1 . .
+            . . . . 1 1 . . . . 1 1 . . . .
+            . . . . . . 1 1 1 1 . . . . . .
+            . . . . 1 1 . . . . 1 1 . . . .
+            . . 1 1 . . . . . . . . 1 1 . .
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+        `,
+        img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            1 1 1 1 . . . . . . . . 1 1 1 1
+            . . . . 1 1 1 . . 1 1 1 . . . .
+            . . . . . . . 1 1 . . . . . . .
+            . . . . 1 1 1 . . 1 1 1 . . . .
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+        `,
+        img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            1 1 1 1 1 . . . . . 1 1 1 1 1 1
+            . . . . . 1 1 1 1 1 . . . . . .
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+        `,
+        img`
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+        2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+        2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+        c c c c c c c c c c c c c c c c
+        c c c c c c c c c c c c c c c c
+        c c c c c c c c c c c c c c c c
+        `
+    ], 50, false)
+    otherSprite.setFlag(SpriteFlag.Ghost, false)
+    
+    
+})
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Switch, function(sprite, otherSprite){
     let wallSprite = sprites.readDataSprite(otherSprite, "myWall")
     tiles.setWallAt(wallSprite.tilemapLocation(), false)
@@ -3680,6 +3907,30 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.HeartPower, function(sprite, oth
     otherSprite.destroy()
     info.changeLifeBy(1)
 })
+
+function generateTilemapJumpPads(){
+    for (let tileLocation of tiles.getTilesByType(assets.tile`jumpSpawnTile`)) {
+        createJumpPad(tileLocation)
+        tiles.setTileAt(tileLocation, img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+        `)
+    }
+}
 
 function generateTilemapSwitchWall(){
     for(let i = 0; i < tiles.getTilesByType(assets.tile`switchSpawnTile`).length; i++){
