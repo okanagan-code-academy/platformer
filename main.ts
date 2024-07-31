@@ -21,12 +21,14 @@ namespace SpriteKind {
     export const Key = SpriteKind.create()
     export const Shop = SpriteKind.create()
     export const Switch = SpriteKind.create()
-    export const JumpPad = SpriteKind.create()
+    export const JumpPadUp = SpriteKind.create()
+    export const JumpPadRight = SpriteKind.create()
+    export const JumpPadLeft = SpriteKind.create()
 }
 
 
 
-let currentLevel: number = 1
+let currentLevel: number = -1
 let powerupTileCountList = [
     {
         "asset" : assets.tile`growTile`,
@@ -766,7 +768,7 @@ function createLevel() {
         SpriteKind.HeartPower,
         SpriteKind.InvinciblePower,
         SpriteKind.WallJumpPower,
-        SpriteKind.JumpPad,
+        SpriteKind.JumpPadUp,
     ]
 
     for(let spriteType of allSpriteKindsList){
@@ -809,8 +811,10 @@ function placePlayerOnTilemap() {
 
 onStart()
 
-function createJumpPad(tileLocation: tiles.Location){
-    let jumpPadSprite: Sprite = sprites.create(img`
+function createJumpPad(tileLocation: tiles.Location, jumpType: string){
+    let jumpPadSprite: Sprite = null
+    if (jumpType == "up"){
+       jumpPadSprite = sprites.create(img`
         . . . . . . . . . . . . . . . .
         . . . . . . . . . . . . . . . .
         . . . . . . . . . . . . . . . .
@@ -827,7 +831,48 @@ function createJumpPad(tileLocation: tiles.Location){
         c c c c c c c c c c c c c c c c
         c c c c c c c c c c c c c c c c
         c c c c c c c c c c c c c c c c
-    `, SpriteKind.JumpPad)
+        `, SpriteKind.JumpPadUp)
+    } else if (jumpType == "right"){
+        jumpPadSprite = sprites.create(img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+        `, SpriteKind.JumpPadRight)
+    } else if (jumpType == "left") {
+        jumpPadSprite = sprites.create(img`
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+        2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+        2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+        c c c c c c c c c c c c c c c c
+        c c c c c c c c c c c c c c c c
+        c c c c c c c c c c c c c c c c
+        `, SpriteKind.JumpPadLeft)
+    }
+    
+    sprites.setDataString(jumpPadSprite, "type", jumpType)
     tiles.placeOnTile(jumpPadSprite, tileLocation)
 }
 
@@ -2835,7 +2880,7 @@ function createPlayerJumpingAnimation(){
 }
 
 // player, projectile, and enemy overlap events
-sprites.onOverlap(SpriteKind.Player, SpriteKind.JumpPad, function(sprite, otherSprite){
+sprites.onOverlap(SpriteKind.Player, SpriteKind.JumpPadUp, function(sprite, otherSprite){
     sprite.vy = -300
     animation.runImageAnimation(otherSprite, [
         img`
@@ -3003,11 +3048,26 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.JumpPad, function(sprite, otherS
         c c c c c c c c c c c c c c c c
         c c c c c c c c c c c c c c c c
         c c c c c c c c c c c c c c c c
-        `
+        `,
+        ], 50, false)
+    otherSprite.setFlag(SpriteFlag.Ghost, false) 
+})
+sprites.onOverlap(SpriteKind.Player, SpriteKind.JumpPadRight, function (sprite, otherSprite) {   
+    controller.moveSprite(sprite, 0, 0)
+    animation.runImageAnimation(otherSprite, [
     ], 50, false)
+    sprite.vy = -200
+    sprite.vx = 500
+    otherSprite.setFlag(SpriteFlag.Ghost, true)
+    
+    timer.after(200, function() {
+        controller.moveSprite(sprite, 100, 0)
+    })
+    pause(1500)
+    animation.runImageAnimation(otherSprite, [
+    ], 50, false)
+    
     otherSprite.setFlag(SpriteFlag.Ghost, false)
-    
-    
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Switch, function(sprite, otherSprite){
     let wallSprite = sprites.readDataSprite(otherSprite, "myWall")
@@ -4047,7 +4107,49 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.WallJumpPower, function (sprite,
 
 function generateTilemapJumpPads(){
     for (let tileLocation of tiles.getTilesByType(assets.tile`jumpSpawnTile`)) {
-        createJumpPad(tileLocation)
+        createJumpPad(tileLocation, "up")
+        tiles.setTileAt(tileLocation, img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+        `)
+    }
+    for (let tileLocation of tiles.getTilesByType(assets.tile`jumpRightSpawnTile`)) {
+        createJumpPad(tileLocation, "right")
+        tiles.setTileAt(tileLocation, img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+        `)
+    }
+    for (let tileLocation of tiles.getTilesByType(assets.tile`jumpLeftSpawnTile`)) {
+        createJumpPad(tileLocation, "left")
         tiles.setTileAt(tileLocation, img`
             . . . . . . . . . . . . . . . .
             . . . . . . . . . . . . . . . .
