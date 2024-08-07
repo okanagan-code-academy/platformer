@@ -24,6 +24,7 @@ namespace SpriteKind {
     export const JumpPadUp = SpriteKind.create()
     export const JumpPadRight = SpriteKind.create()
     export const JumpPadLeft = SpriteKind.create()
+    export const Portal = SpriteKind.create()
 }
 
 
@@ -64,6 +65,7 @@ let powerupTileCountList = [
     },
 ]
 let keysAmount: number = 0
+let playerLastGroundLocation: tiles.Location
 let playerInventoryList: Sprite[] = []
 let menuSprite: miniMenu.MenuSprite = null
 let maxLevel : number = 0
@@ -791,6 +793,7 @@ function createLevel() {
     generateTilemapKeys()
     generateTilemapShop()
     generateTilemapJumpPads()
+    generateTilemapPortals()
     
     placePlayerOnTilemap()
 
@@ -810,6 +813,54 @@ function placePlayerOnTilemap() {
 }
 
 onStart()
+
+function createPortals(statrtTileLocation: tiles.Location, endTileLocation: tiles.Location){
+    let startPortal: Sprite = sprites.create(img`
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . 7 7 7 7 7 7 7 7 . . . .
+        . . . 7 4 4 4 4 4 4 4 4 7 . . .
+        . . 7 4 4 5 5 5 5 5 5 4 4 7 . .
+        . 7 4 4 5 5 5 1 1 5 5 5 4 4 7 .
+        . 7 4 5 5 5 1 1 5 5 5 5 5 4 7 .
+        . 7 4 5 5 1 1 5 5 5 5 5 5 4 7 .
+        . 7 4 5 5 5 1 1 1 1 5 5 5 4 7 .
+        . 7 4 5 5 5 5 5 5 1 1 5 5 4 7 .
+        . 7 4 5 5 5 5 5 1 1 5 5 5 4 7 .
+        . 7 4 5 5 5 5 1 1 5 5 5 5 4 7 .
+        . 7 4 4 5 5 5 5 5 5 5 5 4 4 7 .
+        . . 7 4 4 5 5 5 5 5 5 4 4 7 . .
+        . . . 7 4 4 4 4 4 4 4 4 7 . . .
+        . . . . 7 7 7 7 7 7 7 7 . . . .
+        . . . . b b b b b c c f . . . .
+        . . . b b b b b b b c c f . . .
+    `, SpriteKind.Portal)
+    let endPortal: Sprite = sprites.create(img`
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . 2 2 2 2 2 2 2 2 . . . .
+        . . . 2 3 3 3 3 3 3 3 3 2 . . .
+        . . 2 3 3 4 4 4 4 4 4 3 3 2 . .
+        . 2 3 3 4 4 4 1 1 4 4 4 3 3 2 .
+        . 2 3 4 4 4 1 1 4 4 4 4 4 3 2 .
+        . 2 3 4 4 1 1 4 4 4 4 4 4 3 2 .
+        . 2 3 4 4 4 1 1 1 1 4 4 4 3 2 .
+        . 2 3 4 4 4 4 4 4 1 1 4 4 3 2 .
+        . 2 3 4 4 4 4 4 1 1 4 4 4 3 2 .
+        . 2 3 4 4 4 4 1 1 4 4 4 4 3 2 .
+        . 2 3 3 4 4 4 4 4 4 4 4 3 3 2 .
+        . . 2 3 3 4 4 4 4 4 4 3 3 2 . .
+        . . . 2 3 3 3 3 3 3 3 3 2 . . .
+        . . . . 2 2 2 2 2 2 2 2 . . . .
+        . . . . b b b b b c c f . . . .
+        . . . b b b b b b b c c f . . .
+    `, SpriteKind.Portal)
+    sprites.setDataSprite(startPortal, "linkedPortal", endPortal)
+    sprites.setDataSprite(endPortal, "linkedPortal", startPortal)
+    tiles.placeOnTile(startPortal, statrtTileLocation)
+    tiles.placeOnTile(endPortal, endTileLocation)
+}
+
 
 function createJumpPad(tileLocation: tiles.Location, jumpType: string){
     let jumpPadSprite: Sprite = null
@@ -2187,6 +2238,7 @@ scene.onHitWall(SpriteKind.Projectile, function(sprite, location){
 
 scene.onHitWall(SpriteKind.Player, function(sprite, location){
     if(sprite.isHittingTile(CollisionDirection.Bottom)){
+        playerLastGroundLocation = location
         isFalling = false
         jumps = 1
     }
@@ -3055,6 +3107,60 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.JumpPadUp, function(sprite, othe
 sprites.onOverlap(SpriteKind.Player, SpriteKind.JumpPadRight, function (sprite, otherSprite) {   
     controller.moveSprite(sprite, 0, 0)
     animation.runImageAnimation(otherSprite, [
+        img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+        `,
+        img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            1 1 1 1 1 . . . . . 1 1 1 1 1 1
+            . . . . . 1 1 1 1 1 . . . . . .
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+        `,
+        img`
+            . . . . . . . . . . . . . 2 2 2
+            . . . . . . . . . . . . . 2 2 2
+            . . . . . . . . . . . . 1 2 2 2
+            . . . . . . . . . . . 1 . 2 2 2
+            . . . . . . . . . . 1 . . 2 2 2
+            . . . . . . . . . . 1 . . 2 2 2
+            . . . . . . . . . 1 1 . . 2 2 2
+            . . . . . . . 1 1 . 1 . . 2 2 2
+            . . . . . . 1 . . 1 . 1 . 2 2 2
+            . . . . . 1 . . . 1 . . 1 2 2 2
+            . . . . 1 . . . . . 1 . . 2 2 2
+            . . . . 1 . . . . . 1 . . 2 2 2
+            . . . 1 . . . . . . 1 . . 2 2 2
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+        `,
     ], 50, false)
     sprite.vy = -200
     sprite.vx = 500
@@ -3065,8 +3171,187 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.JumpPadRight, function (sprite, 
     })
     pause(1500)
     animation.runImageAnimation(otherSprite, [
+        img`
+            . . . . . . . . . . . . . 2 2 2
+            . . . . . . . . . . . . . 2 2 2
+            . . . . . . . . . . . . 1 2 2 2
+            . . . . . . . . . . . 1 . 2 2 2
+            . . . . . . . . . . 1 . . 2 2 2
+            . . . . . . . . . . 1 . . 2 2 2
+            . . . . . . . . . 1 1 . . 2 2 2
+            . . . . . . . 1 1 . 1 . . 2 2 2
+            . . . . . . 1 . . 1 . 1 . 2 2 2
+            . . . . . 1 . . . 1 . . 1 2 2 2
+            . . . . 1 . . . . . 1 . . 2 2 2
+            . . . . 1 . . . . . 1 . . 2 2 2
+            . . . 1 . . . . . . 1 . . 2 2 2
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+        `,
+        img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            1 1 1 1 1 . . . . . 1 1 1 1 1 1
+            . . . . . 1 1 1 1 1 . . . . . .
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+        `,
+        img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+        `,
     ], 50, false)
     
+    otherSprite.setFlag(SpriteFlag.Ghost, false)
+})
+sprites.onOverlap(SpriteKind.Player, SpriteKind.JumpPadLeft, function (sprite, otherSprite) {
+    controller.moveSprite(sprite, 0, 0)
+    animation.runImageAnimation(otherSprite, [
+        img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+        `,
+        img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            1 1 1 1 1 1 . . . . . 1 1 1 1 1
+            . . . . . . 1 1 1 1 1 . . . . .
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+        `,
+        img`
+            2 2 2 . . . . . . . . . . . . .
+            2 2 2 . . . . . . . . . . . . .
+            2 2 2 1 . . . . . . . . . . . .
+            2 2 2 . 1 . . . . . . . . . . .
+            2 2 2 . . 1 . . . . . . . . . .
+            2 2 2 . . 1 . . . . . . . . . .
+            2 2 2 . . 1 1 . . . . . . . . .
+            2 2 2 . . 1 . 1 1 . . . . . . .
+            2 2 2 . 1 . 1 . . 1 . . . . . .
+            2 2 2 1 . . 1 . . . 1 . . . . .
+            2 2 2 . . 1 . . . . . 1 . . . .
+            2 2 2 . . 1 . . . . . 1 . . . .
+            2 2 2 . . 1 . . . . . . 1 . . .
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+        `,
+    ], 50, false)
+    sprite.vy = -200
+    sprite.vx = -500
+    otherSprite.setFlag(SpriteFlag.Ghost, true)
+
+    timer.after(200, function () {
+        controller.moveSprite(sprite, 100, 0)
+    })
+    pause(1500)
+    animation.runImageAnimation(otherSprite, [
+        img`
+            2 2 2 . . . . . . . . . . . . .
+            2 2 2 . . . . . . . . . . . . .
+            2 2 2 1 . . . . . . . . . . . .
+            2 2 2 . 1 . . . . . . . . . . .
+            2 2 2 . . 1 . . . . . . . . . .
+            2 2 2 . . 1 . . . . . . . . . .
+            2 2 2 . . 1 1 . . . . . . . . .
+            2 2 2 . . 1 . 1 1 . . . . . . .
+            2 2 2 . 1 . 1 . . 1 . . . . . .
+            2 2 2 1 . . 1 . . . 1 . . . . .
+            2 2 2 . . 1 . . . . . 1 . . . .
+            2 2 2 . . 1 . . . . . 1 . . . .
+            2 2 2 . . 1 . . . . . . 1 . . .
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+        `,
+        img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            1 1 1 1 1 1 . . . . . 1 1 1 1 1
+            . . . . . . 1 1 1 1 1 . . . . .
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+        `,
+        img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+            c c c c c c c c c c c c c c c c
+        `,
+    ], 50, false)
+
     otherSprite.setFlag(SpriteFlag.Ghost, false)
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Switch, function(sprite, otherSprite){
@@ -3221,6 +3506,103 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Switch, function(sprite, otherSp
     ], 50, false)
     otherSprite.setFlag(SpriteFlag.Ghost, true)
 })
+sprites.onOverlap(SpriteKind.Player, SpriteKind.Portal, function(sprite, otherSprite){
+    sprite.vy = -200
+    let destinationPortalSprite: Sprite = sprites.readDataSprite(otherSprite, "linkedPortal")
+    if (!destinationPortalSprite){
+        return
+    }
+    tiles.placeOnTile(sprite, destinationPortalSprite.tilemapLocation())
+    otherSprite.setFlag(SpriteFlag.Ghost, true)
+    destinationPortalSprite.setFlag(SpriteFlag.Ghost, true)
+    otherSprite.setImage(img`
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . b b b b b c c f . . . .
+        . . . b b b b b b b c c f . . .
+    `)
+    destinationPortalSprite.setImage(img`
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . b b b b b c c f . . . .
+        . . . b b b b b b b c c f . . .
+    `)
+    
+    timer.after(5000, function(){
+        otherSprite.setFlag(SpriteFlag.Ghost, false)
+        destinationPortalSprite.setFlag(SpriteFlag.Ghost, false)
+        otherSprite.setImage(img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . 7 7 7 7 7 7 7 7 . . . .
+            . . . 7 4 4 4 4 4 4 4 4 7 . . .
+            . . 7 4 4 5 5 5 5 5 5 4 4 7 . .
+            . 7 4 4 5 5 5 1 1 5 5 5 4 4 7 .
+            . 7 4 5 5 5 1 1 5 5 5 5 5 4 7 .
+            . 7 4 5 5 1 1 5 5 5 5 5 5 4 7 .
+            . 7 4 5 5 5 1 1 1 1 5 5 5 4 7 .
+            . 7 4 5 5 5 5 5 5 1 1 5 5 4 7 .
+            . 7 4 5 5 5 5 5 1 1 5 5 5 4 7 .
+            . 7 4 5 5 5 5 1 1 5 5 5 5 4 7 .
+            . 7 4 4 5 5 5 5 5 5 5 5 4 4 7 .
+            . . 7 4 4 5 5 5 5 5 5 4 4 7 . .
+            . . . 7 4 4 4 4 4 4 4 4 7 . . .
+            . . . . 7 7 7 7 7 7 7 7 . . . .
+            . . . . b b b b b c c f . . . .
+            . . . b b b b b b b c c f . . .
+        `)
+        destinationPortalSprite.setImage(img`
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . 2 2 2 2 2 2 2 2 . . . .
+        . . . 2 3 3 3 3 3 3 3 3 2 . . .
+        . . 2 3 3 4 4 4 4 4 4 3 3 2 . .
+        . 2 3 3 4 4 4 1 1 4 4 4 3 3 2 .
+        . 2 3 4 4 4 1 1 4 4 4 4 4 3 2 .
+        . 2 3 4 4 1 1 4 4 4 4 4 4 3 2 .
+        . 2 3 4 4 4 1 1 1 1 4 4 4 3 2 .
+        . 2 3 4 4 4 4 4 4 1 1 4 4 3 2 .
+        . 2 3 4 4 4 4 4 1 1 4 4 4 3 2 .
+        . 2 3 4 4 4 4 1 1 4 4 4 4 3 2 .
+        . 2 3 3 4 4 4 4 4 4 4 4 3 3 2 .
+        . . 2 3 3 4 4 4 4 4 4 3 3 2 . .
+        . . . 2 3 3 3 3 3 3 3 3 2 . . .
+        . . . . 2 2 2 2 2 2 2 2 . . . .
+        . . . . b b b b b c c f . . . .
+        . . . b b b b b b b c c f . . .
+    `)
+    })
+})
+
+
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Collectible, function(sprite, otherSprite){
     sprites.destroy(otherSprite)
     info.changeScoreBy(5)
@@ -4102,7 +4484,56 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.WallJumpPower, function (sprite,
     sprites.setDataBoolean(sprite, "WallJumpPower", true)
 
 })
+function generateTilemapPortals(){
+    let portalSpawnTiles: tiles.Location[] = tiles.getTilesByType(assets.tile`portalSpawnTile`)
+    if (portalSpawnTiles.length <= 1){
+        console.log("Not enough portal spawn tiles")
+        return
+    }
+    let tileCounter: number = 1
+    
+    while (tileCounter <= portalSpawnTiles.length - 1){
+        createPortals(portalSpawnTiles[tileCounter-1], portalSpawnTiles[tileCounter])
+        tiles.setTileAt(portalSpawnTiles[tileCounter - 1], img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+        `)
+        tiles.setTileAt(portalSpawnTiles[tileCounter], img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+        `)
+        tileCounter += 1
+    }
 
+}
 
 
 function generateTilemapJumpPads(){
@@ -4573,6 +5004,10 @@ game.onUpdate(function() {
                 isFalling = true
         })
         
+    }
+    if (playerSprite.isOutOfScreen(game.currentScene().camera)){
+        resetPlayerPowerups()
+        placePlayerOnTilemap()
     }
     // Changing direction of powerups when they reach a side wall
     changeDirectionX(SpriteKind.GrowPower)
