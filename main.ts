@@ -9,6 +9,7 @@ namespace SpriteKind {
     export const HeartPower = SpriteKind.create()
     export const InvinciblePower = SpriteKind.create()
     export const WallJumpPower = SpriteKind.create()
+    export const GravityPower = SpriteKind.create()
     export const Selector = SpriteKind.create()
     export const Arrow = SpriteKind.create()
     export const Indicator = SpriteKind.create()
@@ -24,9 +25,8 @@ namespace SpriteKind {
     export const JumpPadUp = SpriteKind.create()
     export const JumpPadRight = SpriteKind.create()
     export const JumpPadLeft = SpriteKind.create()
-    export const Portal = SpriteKind.create()
+    export const Portal = SpriteKind.create()  
 }
-
 
 
 let currentLevel: number = -1
@@ -60,12 +60,16 @@ let powerupTileCountList = [
         "max_count": 0,
     },
     {
+        "asset": assets.tile`gravityTile`,
+        "max_count": 0,
+    },
+    {
         "asset": assets.tile`luckyTile`,
         "max_count": 0,
     },
+   
 ]
 let keysAmount: number = 0
-let playerLastGroundLocation: tiles.Location
 let playerInventoryList: Sprite[] = []
 let menuSprite: miniMenu.MenuSprite = null
 let maxLevel : number = 0
@@ -82,6 +86,8 @@ let indicatorSprite: Sprite = null
 let levelTileLocationsList: tiles.Location[] = []
 let index: number = 0
 
+let isTeleporting: boolean = false
+let isUpsideDown: boolean = false
 let isFalling: boolean = false
 let levelSelect: boolean = false
 
@@ -804,12 +810,16 @@ function createLevel() {
     powerupTileCountList[4]["max_count"] = tiles.getTilesByType(assets.tile`heartTile`).length
     powerupTileCountList[5]["max_count"] = tiles.getTilesByType(assets.tile`invincibleTile`).length
     powerupTileCountList[6]["max_count"] = tiles.getTilesByType(assets.tile`wallJumpTile`).length
-    powerupTileCountList[7]["max_count"] = tiles.getTilesByType(assets.tile`luckyTile`).length
+    powerupTileCountList[7]["max_count"] = tiles.getTilesByType(assets.tile`gravityTile`).length
+    powerupTileCountList[8]["max_count"] = tiles.getTilesByType(assets.tile`luckyTile`).length
     
 }
 
+function countPowerupTiles() {
+}
+
 function placePlayerOnTilemap() {
-    tiles.placeOnRandomTile(playerSprite, assets.tile`spawnTile`)
+    tiles.placeOnRandomTile(playerSprite, assets.tile`startingSpawnTile`)
 }
 
 onStart()
@@ -835,6 +845,7 @@ function createPortals(statrtTileLocation: tiles.Location, endTileLocation: tile
         . . . . b b b b b c c f . . . .
         . . . b b b b b b b c c f . . .
     `, SpriteKind.Portal)
+
     let endPortal: Sprite = sprites.create(img`
         . . . . . . . . . . . . . . . .
         . . . . . . . . . . . . . . . .
@@ -855,6 +866,7 @@ function createPortals(statrtTileLocation: tiles.Location, endTileLocation: tile
         . . . . b b b b b c c f . . . .
         . . . b b b b b b b c c f . . .
     `, SpriteKind.Portal)
+
     sprites.setDataSprite(startPortal, "linkedPortal", endPortal)
     sprites.setDataSprite(endPortal, "linkedPortal", startPortal)
     tiles.placeOnTile(startPortal, statrtTileLocation)
@@ -1764,7 +1776,9 @@ function resetPlayerPowerups(){
     sprites.setDataBoolean(playerSprite, "BatPower", false)
     sprites.setDataBoolean(playerSprite, "InvinciblePower", false)
     sprites.setDataBoolean(playerSprite, "WallJumpPower", false)
+    sprites.setDataBoolean(playerSprite, "GravityPower", false)
     isFlying = false
+    isUpsideDown = false
 }
 // Powerup Object
 let powerUpObject = {
@@ -1898,7 +1912,24 @@ let powerUpObject = {
             ....................
             ....................
         `,
-        
+        img`
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . a a a a a a a a . . . .
+            . . . a a a a a a a a a a . . .
+            . . a a a 1 1 1 1 1 1 1 1 . . .
+            . . a a 1 1 1 1 1 1 1 1 9 9 . .
+            . . a a 1 1 1 3 3 1 1 9 9 9 9 .
+            a a a a a a 1 3 3 1 9 9 9 9 9 9
+            . a a a a 1 1 3 3 1 1 1 9 9 . .
+            . . a a 1 1 1 1 1 1 1 1 9 9 . .
+            . . . 1 1 1 1 1 1 1 1 9 9 9 . .
+            . . . 9 9 9 9 9 9 9 9 9 9 . . .
+            . . . . 9 9 9 9 9 9 9 9 . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+        `,
         ],
     "kind" : [
         SpriteKind.GrowPower,
@@ -1908,15 +1939,17 @@ let powerUpObject = {
         SpriteKind.HeartPower,
         SpriteKind.InvinciblePower,
         SpriteKind.WallJumpPower,
+        SpriteKind.GravityPower,
     ],
     "scale" : [
         0.75,
         0.75,
         0.75,
         0.75,
-        1,
-        1,
+        1.0,
+        1.0,
         0.75,
+        1.0,
     ]
 }
 
@@ -1967,10 +2000,15 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
         isFalling = true
         jumps -= 1
         music.play(music.createSoundEffect(WaveShape.Triangle, 400, 869, 255, 0, 200, SoundExpressionEffect.None, InterpolationCurve.Logarithmic), music.PlaybackMode.InBackground)
+        if (isUpsideDown) {
+            playerSprite.vy = 200
+            return
+        }
         if(sprites.readDataBoolean(playerSprite, "ShrinkPower")){
             playerSprite.vy = -250
             return
         }
+        
         
         playerSprite.vy = -200
         
@@ -2030,6 +2068,10 @@ function batPower() {
     playerSprite.ay = 0
 }
 info.onCountdownEnd(function(){
+    if (sprites.readDataBoolean(playerSprite, "GravityPower")) {
+        resetPlayerPowerups()
+        return
+    }
     if(sprites.readDataBoolean(playerSprite, "InvinciblePower")){
         resetPlayerPowerups()
         return
@@ -2237,8 +2279,13 @@ scene.onHitWall(SpriteKind.Projectile, function(sprite, location){
 })
 
 scene.onHitWall(SpriteKind.Player, function(sprite, location){
-    if(sprite.isHittingTile(CollisionDirection.Bottom)){
-        playerLastGroundLocation = location
+    let playerTopDirection: CollisionDirection = CollisionDirection.Top
+    let playerBottomDirection: CollisionDirection = CollisionDirection.Bottom
+    if(isUpsideDown){
+        playerTopDirection = CollisionDirection.Bottom
+        playerBottomDirection = CollisionDirection.Top
+    }
+    if (sprite.isHittingTile(playerBottomDirection)){
         isFalling = false
         jumps = 1
     }
@@ -2248,7 +2295,7 @@ scene.onHitWall(SpriteKind.Player, function(sprite, location){
             jumps = 1
         }
     }
-    if(sprite.isHittingTile(CollisionDirection.Top)){
+    if (sprite.isHittingTile(playerTopDirection)){
         if(tiles.tileAtLocationEquals(location, assets.tile`luckyTile`) || 
             tiles.tileAtLocationEquals(location, assets.tile`growTile`) ||
             tiles.tileAtLocationEquals(location, assets.tile`shootTile`) ||
@@ -2257,6 +2304,7 @@ scene.onHitWall(SpriteKind.Player, function(sprite, location){
             tiles.tileAtLocationEquals(location, assets.tile`heartTile`) ||
             tiles.tileAtLocationEquals(location, assets.tile`invincibleTile`) ||
             tiles.tileAtLocationEquals(location, assets.tile`wallJumpTile`) ||
+            tiles.tileAtLocationEquals(location, assets.tile`gravityTile`) ||
             tiles.tileAtLocationEquals(location, assets.tile`depletedTile`) ){
             
             // createCollectible(targetLocation)
@@ -2368,6 +2416,22 @@ scene.onOverlapTile(SpriteKind.BatPower, assets.tile`lavaTile`, function (sprite
     sprite.destroy()
     music.play(music.createSoundEffect(WaveShape.Sine, 200, 825, 255, 0, 150, SoundExpressionEffect.Vibrato, InterpolationCurve.Linear), music.PlaybackMode.UntilDone)
 })
+scene.onOverlapTile(SpriteKind.HeartPower, assets.tile`lavaTile`, function (sprite, location) {
+    sprite.destroy()
+    music.play(music.createSoundEffect(WaveShape.Sine, 200, 825, 255, 0, 150, SoundExpressionEffect.Vibrato, InterpolationCurve.Linear), music.PlaybackMode.UntilDone)
+})
+scene.onOverlapTile(SpriteKind.InvinciblePower, assets.tile`lavaTile`, function (sprite, location) {
+    sprite.destroy()
+    music.play(music.createSoundEffect(WaveShape.Sine, 200, 825, 255, 0, 150, SoundExpressionEffect.Vibrato, InterpolationCurve.Linear), music.PlaybackMode.UntilDone)
+})
+scene.onOverlapTile(SpriteKind.WallJumpPower, assets.tile`lavaTile`, function (sprite, location) {
+    sprite.destroy()
+    music.play(music.createSoundEffect(WaveShape.Sine, 200, 825, 255, 0, 150, SoundExpressionEffect.Vibrato, InterpolationCurve.Linear), music.PlaybackMode.UntilDone)
+})
+scene.onOverlapTile(SpriteKind.GravityPower, assets.tile`lavaTile`, function (sprite, location) {
+    sprite.destroy()
+    music.play(music.createSoundEffect(WaveShape.Sine, 200, 825, 255, 0, 150, SoundExpressionEffect.Vibrato, InterpolationCurve.Linear), music.PlaybackMode.UntilDone)
+})
 scene.onOverlapTile(SpriteKind.Collectible, assets.tile`lavaTile`, function (sprite, location) {
     sprite.destroy()
     music.play(music.createSoundEffect(WaveShape.Sine, 200, 825, 255, 0, 150, SoundExpressionEffect.Vibrato, InterpolationCurve.Linear), music.PlaybackMode.UntilDone)
@@ -2453,6 +2517,8 @@ function hitPowerBox(tileImage: Image, location: tiles.Location){
         createPowerUp(5, targetLocation)
     } else if (tileImage == assets.tile`wallJumpTile`) {
         createPowerUp(6, targetLocation)
+    } else if (tileImage == assets.tile`gravityTile`) {
+        createPowerUp(7, targetLocation)
     } else if (tileImage == assets.tile`depletedTile`){
         music.play(music.createSoundEffect(WaveShape.Sine, 200, 600, 255, 0, 200, SoundExpressionEffect.None, InterpolationCurve.Linear), music.PlaybackMode.InBackground)
         return
@@ -3507,11 +3573,12 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Switch, function(sprite, otherSp
     otherSprite.setFlag(SpriteFlag.Ghost, true)
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Portal, function(sprite, otherSprite){
-    sprite.vy = -200
     let destinationPortalSprite: Sprite = sprites.readDataSprite(otherSprite, "linkedPortal")
     if (!destinationPortalSprite){
         return
     }
+    
+    isTeleporting = true
     tiles.placeOnTile(sprite, destinationPortalSprite.tilemapLocation())
     otherSprite.setFlag(SpriteFlag.Ghost, true)
     destinationPortalSprite.setFlag(SpriteFlag.Ghost, true)
@@ -3598,7 +3665,8 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Portal, function(sprite, otherSp
         . . . . 2 2 2 2 2 2 2 2 . . . .
         . . . . b b b b b c c f . . . .
         . . . b b b b b b b c c f . . .
-    `)
+        `)
+        isTeleporting = false
     })
 })
 
@@ -4484,6 +4552,24 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.WallJumpPower, function (sprite,
     sprites.setDataBoolean(sprite, "WallJumpPower", true)
 
 })
+sprites.onOverlap(SpriteKind.Player, SpriteKind.GravityPower, function(sprite, otherSprite){
+    otherSprite.destroy()
+    resetPlayerPowerups()
+    music.play(music.createSoundEffect(WaveShape.Sine, 200, 825, 255, 0, 150, SoundExpressionEffect.Vibrato, InterpolationCurve.Linear), music.PlaybackMode.UntilDone)
+
+    if(sprites.readDataBoolean(sprite, "GravityPower")){
+        return
+    }
+    sprites.setDataBoolean(sprite, "GravityPower", true)
+    switchGravity()
+})
+
+function switchGravity() {
+    isUpsideDown = true
+    playerSprite.ay = -300
+    info.startCountdown(15)
+}
+
 function generateTilemapPortals(){
     let portalSpawnTiles: tiles.Location[] = tiles.getTilesByType(assets.tile`portalSpawnTile`)
     if (portalSpawnTiles.length <= 1){
@@ -4996,30 +5082,39 @@ game.onUpdate(function(){
 
 game.onUpdate(function() {
     // console.log(currentLevel)
+    playerSprite.sayText(isUpsideDown)
     if(levelSelect){
         return
     }
-    if (playerSprite.vy > 0 && !isFalling){
-        timer.after(200, function() {
+    if(isUpsideDown){
+        if (playerSprite.vy < 0 && !isFalling) {
+            timer.after(200, function () {
                 isFalling = true
+            })
+
+        }
+    } else if (playerSprite.vy > 0 && !isFalling) {
+        timer.after(200, function () {
+            isFalling = true
         })
-        
+
     }
-    if (playerSprite.isOutOfScreen(game.currentScene().camera)){
+
+
+
+    
+    if (playerSprite.isOutOfScreen(game.currentScene().camera) && !isTeleporting){
         resetPlayerPowerups()
         placePlayerOnTilemap()
     }
     // Changing direction of powerups when they reach a side wall
-    changeDirectionX(SpriteKind.GrowPower)
-    changeDirectionX(SpriteKind.ShootPower)
-    changeDirectionX(SpriteKind.ShrinkPower)
-    changeDirectionX(SpriteKind.BatPower)
-    changeDirectionX(SpriteKind.HeartPower)
-    changeDirectionX(SpriteKind.InvinciblePower)
-    changeDirectionX(SpriteKind.WallJumpPower)
     changeDirectionX(SpriteKind.Enemy)
     changeDirectionX(SpriteKind.MysteryEnemy)
     changeDirectionX(SpriteKind.ShellEnemy)
+    
+    for(let powerKind of powerUpObject["kind"]){
+        changeDirectionX(powerKind)
+    }
 
 })
 game.onUpdateInterval(1000, function() {
