@@ -29,7 +29,7 @@ namespace SpriteKind {
 }
 
 
-let currentLevel: number = -1
+let currentLevel: number = 2
 let powerupTileCountList = [
     {
         "asset" : assets.tile`growTile`,
@@ -78,6 +78,7 @@ let maxWorld : number = 0
 let previousLevelLocation: tiles.Location
 let jumps: number = 0
 let isFlying: boolean = false
+
 let delta: number = 0
 let playerSprite: Sprite = null
 let levelSelectSprite: Sprite = null
@@ -85,6 +86,7 @@ let arrowSprite: Sprite = null
 let indicatorSprite: Sprite = null
 let levelTileLocationsList: tiles.Location[] = []
 let index: number = 0
+let isJumpPadding: boolean = false
 let isTeleporting: boolean = false
 let isUpsideDown: boolean = false
 let isFalling: boolean = false
@@ -1021,6 +1023,10 @@ function createLevel() {
         SpriteKind.InvinciblePower,
         SpriteKind.WallJumpPower,
         SpriteKind.JumpPadUp,
+        SpriteKind.JumpPadLeft,
+        SpriteKind.JumpPadRight,
+        SpriteKind.Portal,
+        SpriteKind.MiniMenu,
     ]
 
     for(let spriteType of allSpriteKindsList){
@@ -2526,8 +2532,17 @@ scene.onHitWall(SpriteKind.Projectile, function(sprite, location){
         sprite.destroy()
     }
 })
-
+function isPlayerJumpPaddingCheck(sprite: Sprite){
+    if(!isJumpPadding){
+        return
+    }
+    isJumpPadding = false
+    controller.moveSprite(sprite, 100, 0)
+    sprite.vx = 0
+    sprite.vy = 0
+}
 scene.onHitWall(SpriteKind.Player, function(sprite, location){
+    isPlayerJumpPaddingCheck(sprite)
     let playerTopDirection: CollisionDirection = CollisionDirection.Top
     let playerBottomDirection: CollisionDirection = CollisionDirection.Bottom
     if(isUpsideDown){
@@ -2567,28 +2582,29 @@ scene.onHitWall(SpriteKind.Player, function(sprite, location){
                 music.play(music.createSoundEffect(WaveShape.Sawtooth, 1137, 1, 255, 0, 100, SoundExpressionEffect.None, InterpolationCurve.Logarithmic), music.PlaybackMode.InBackground)
                 destroyTile(assets.tile`stoneUnbreakable`, location, effects.disintegrate, -50)
                 return
-            } else if(Math.randomRange(1, 100) < 5){
-                let targetLocation: tiles.Location = tiles.getTileLocation(location.column, location.row - 1)
-                createCollectible(targetLocation)
-                hitPowerBox(img`
-                    . . . . . . . . . . . . . . . .
-                    . . . . . . . . . . . . . . . .
-                    . . . . . . . . . . . . . . . .
-                    . . . . . . . . . . . . . . . .
-                    . . . . . . . . . . . . . . . .
-                    . . . . . . . . . . . . . . . .
-                    . . . . . . . . . . . . . . . .
-                    . . . . . . . . . . . . . . . .
-                    . . . . . . . . . . . . . . . .
-                    . . . . . . . . . . . . . . . .
-                    . . . . . . . . . . . . . . . .
-                    . . . . . . . . . . . . . . . .
-                    . . . . . . . . . . . . . . . .
-                    . . . . . . . . . . . . . . . .
-                    . . . . . . . . . . . . . . . .
-                    . . . . . . . . . . . . . . . .
-                `, location)
-            }
+            } 
+            // else if(Math.randomRange(1, 100) < 5){
+            //     let targetLocation: tiles.Location = tiles.getTileLocation(location.column, location.row - 1)
+            //     createCollectible(targetLocation)
+            //     hitPowerBox(img`
+            //         . . . . . . . . . . . . . . . .
+            //         . . . . . . . . . . . . . . . .
+            //         . . . . . . . . . . . . . . . .
+            //         . . . . . . . . . . . . . . . .
+            //         . . . . . . . . . . . . . . . .
+            //         . . . . . . . . . . . . . . . .
+            //         . . . . . . . . . . . . . . . .
+            //         . . . . . . . . . . . . . . . .
+            //         . . . . . . . . . . . . . . . .
+            //         . . . . . . . . . . . . . . . .
+            //         . . . . . . . . . . . . . . . .
+            //         . . . . . . . . . . . . . . . .
+            //         . . . . . . . . . . . . . . . .
+            //         . . . . . . . . . . . . . . . .
+            //         . . . . . . . . . . . . . . . .
+            //         . . . . . . . . . . . . . . . .
+            //     `, location)
+            // }
             music.play(music.createSoundEffect(WaveShape.Square, 200, 1, 255, 0, 25, SoundExpressionEffect.None, InterpolationCurve.Curve), music.PlaybackMode.InBackground)
         }
     }
@@ -2627,7 +2643,7 @@ scene.onOverlapTile(SpriteKind.Player, assets.tile`checkPointTile`, function(spr
     for(let tileLocation of tiles.getTilesByType(assets.tile`startingSpawnTile`)){
         tiles.setTileAt(tileLocation, assets.tile`checkPointTile`)
     }
-    tiles.setTileAt(location, assets.tile`spawnTile`)
+    tiles.setTileAt(location, assets.tile`startingSpawnTile`)
 })
 // Send player back to world select once they reach the exitTile
 scene.onOverlapTile(SpriteKind.Player, assets.tile`closedExitTile`, function (sprite, location) {
@@ -2790,7 +2806,11 @@ sprites.onDestroyed(SpriteKind.Box, function(sprite){
             return false
         }
     })
-    if(tiles.getTilesByType(assets.tile`depletedTile`).length == sum){
+    let depletedTileList: tiles.Location[] = tiles.getTilesByType(assets.tile`depletedTile`)
+    if(depletedTileList.length == sum){
+        // depletedTileList.filter(function(location, index){
+        //     if()
+        // })
         tiles.setTileAt(tiles.getTilesByType(assets.tile`depletedTile`)._pickRandom(), currentPowerupTiles._pickRandom()["asset"])
     }
     
@@ -3698,8 +3718,18 @@ function createPlayerJumpingAnimation(){
 }
 
 // player, projectile, and enemy overlap events
+
+function jumpPadLaunch(sprite: Sprite, velocityX: number, velocityY: number, canMove: boolean){
+    isJumpPadding = true
+    if(!canMove)
+        controller.moveSprite(sprite, 0, 0)
+
+    sprite.vx = velocityX
+    sprite.vy = velocityY
+    
+}
 sprites.onOverlap(SpriteKind.Player, SpriteKind.JumpPadUp, function(sprite, otherSprite){
-    sprite.vy = -300
+    jumpPadLaunch(sprite, 0, -250, true)
     animation.runImageAnimation(otherSprite, [
         img`
             . . . . . . . . . . . . . . . .
@@ -3871,7 +3901,7 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.JumpPadUp, function(sprite, othe
     otherSprite.setFlag(SpriteFlag.Ghost, false) 
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.JumpPadRight, function (sprite, otherSprite) {   
-    controller.moveSprite(sprite, 0, 0)
+    jumpPadLaunch(sprite, 150, -250, false)
     animation.runImageAnimation(otherSprite, [
         img`
             . . . . . . . . . . . . . . . .
@@ -3928,13 +3958,8 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.JumpPadRight, function (sprite, 
             c c c c c c c c c c c c c c c c
         `,
     ], 50, false)
-    sprite.vy = -200
-    sprite.vx = 500
     otherSprite.setFlag(SpriteFlag.Ghost, true)
     
-    timer.after(200, function() {
-        controller.moveSprite(sprite, 100, 0)
-    })
     pause(1500)
     animation.runImageAnimation(otherSprite, [
         img`
@@ -3996,7 +4021,7 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.JumpPadRight, function (sprite, 
     otherSprite.setFlag(SpriteFlag.Ghost, false)
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.JumpPadLeft, function (sprite, otherSprite) {
-    controller.moveSprite(sprite, 0, 0)
+    jumpPadLaunch(sprite, -150, -250, false)
     animation.runImageAnimation(otherSprite, [
         img`
             . . . . . . . . . . . . . . . .
@@ -4057,9 +4082,6 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.JumpPadLeft, function (sprite, o
     sprite.vx = -500
     otherSprite.setFlag(SpriteFlag.Ghost, true)
 
-    timer.after(200, function () {
-        controller.moveSprite(sprite, 100, 0)
-    })
     pause(1500)
     animation.runImageAnimation(otherSprite, [
         img`
@@ -5275,15 +5297,12 @@ function switchGravity() {
 
 function generateTilemapPortals(){
     let portalSpawnTiles: tiles.Location[] = tiles.getTilesByType(assets.tile`portalSpawnTile`)
-    if (portalSpawnTiles.length <= 1 || portalSpawnTiles.length % 2 != 0){
-        console.log("Not enough portal spawn tiles")
-        return
-    }
-    let tileCounter: number = 1
+    let destinationPortalSpawnTiles: tiles.Location[] = tiles.getTilesByType(assets.tile`portalDestinationSpawnTile`)
     
-    while (tileCounter <= portalSpawnTiles.length - 1){
-        createPortals(portalSpawnTiles[tileCounter-1], portalSpawnTiles[tileCounter])
-        tiles.setTileAt(portalSpawnTiles[tileCounter - 1], img`
+    
+    for (let count = 0; count < portalSpawnTiles.length; count++){
+        createPortals(portalSpawnTiles[count], destinationPortalSpawnTiles[count])
+        tiles.setTileAt(portalSpawnTiles[count], img`
             . . . . . . . . . . . . . . . .
             . . . . . . . . . . . . . . . .
             . . . . . . . . . . . . . . . .
@@ -5301,7 +5320,7 @@ function generateTilemapPortals(){
             . . . . . . . . . . . . . . . .
             . . . . . . . . . . . . . . . .
         `)
-        tiles.setTileAt(portalSpawnTiles[tileCounter], img`
+        tiles.setTileAt(destinationPortalSpawnTiles[count], img`
             . . . . . . . . . . . . . . . .
             . . . . . . . . . . . . . . . .
             . . . . . . . . . . . . . . . .
@@ -5319,7 +5338,6 @@ function generateTilemapPortals(){
             . . . . . . . . . . . . . . . .
             . . . . . . . . . . . . . . . .
         `)
-        tileCounter += 2
     }
 
 }
