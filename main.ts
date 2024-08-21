@@ -29,43 +29,52 @@ namespace SpriteKind {
 }
 
 
-let currentLevel: number = 2
+let currentLevel: number = -1
 let powerupTileCountList = [
     {
         "asset" : assets.tile`growTile`,
         "max_count" : 0,
+        "location": [tiles.getTileLocation(0, 0)],
     },
     {
         "asset": assets.tile`shootTile`,
         "max_count": 0,
+        "location": [tiles.getTileLocation(0, 0)],
     },
     {
         "asset": assets.tile`shrinkTile`,
         "max_count": 0,
+        "location": [tiles.getTileLocation(0, 0)],
     },
     {
         "asset": assets.tile`batTile`,
         "max_count": 0,
+        "location": [tiles.getTileLocation(0, 0)],
     },
     {
         "asset": assets.tile`heartTile`,
         "max_count": 0,
+        "location": [tiles.getTileLocation(0, 0)],
     },
     {
         "asset": assets.tile`invincibleTile`,
         "max_count": 0,
+        "location": [tiles.getTileLocation(0, 0)],
     },
     {
         "asset": assets.tile`wallJumpTile`,
         "max_count": 0,
+        "location": [tiles.getTileLocation(0, 0)],
     },
     {
         "asset": assets.tile`gravityTile`,
         "max_count": 0,
+        "location": [tiles.getTileLocation(0, 0)],
     },
     {
         "asset": assets.tile`luckyTile`,
         "max_count": 0,
+        "location": [tiles.getTileLocation(0, 0)],
     },
    
 ]
@@ -1053,15 +1062,20 @@ function createLevel() {
     
     placePlayerOnTilemap()
 
-    powerupTileCountList[0]["max_count"] = tiles.getTilesByType(assets.tile`growTile`).length
-    powerupTileCountList[1]["max_count"] = tiles.getTilesByType(assets.tile`shootTile`).length
-    powerupTileCountList[2]["max_count"] = tiles.getTilesByType(assets.tile`shrinkTile`).length
-    powerupTileCountList[3]["max_count"] = tiles.getTilesByType(assets.tile`batTile`).length
-    powerupTileCountList[4]["max_count"] = tiles.getTilesByType(assets.tile`heartTile`).length
-    powerupTileCountList[5]["max_count"] = tiles.getTilesByType(assets.tile`invincibleTile`).length
-    powerupTileCountList[6]["max_count"] = tiles.getTilesByType(assets.tile`wallJumpTile`).length
-    powerupTileCountList[7]["max_count"] = tiles.getTilesByType(assets.tile`gravityTile`).length
-    powerupTileCountList[8]["max_count"] = tiles.getTilesByType(assets.tile`luckyTile`).length
+    // powerupTileCountList[0]["max_count"] = tiles.getTilesByType(assets.tile`growTile`).length
+    // powerupTileCountList[1]["max_count"] = tiles.getTilesByType(assets.tile`shootTile`).length
+    // powerupTileCountList[2]["max_count"] = tiles.getTilesByType(assets.tile`shrinkTile`).length
+    // powerupTileCountList[3]["max_count"] = tiles.getTilesByType(assets.tile`batTile`).length
+    // powerupTileCountList[4]["max_count"] = tiles.getTilesByType(assets.tile`heartTile`).length
+    // powerupTileCountList[5]["max_count"] = tiles.getTilesByType(assets.tile`invincibleTile`).length
+    // powerupTileCountList[6]["max_count"] = tiles.getTilesByType(assets.tile`wallJumpTile`).length
+    // powerupTileCountList[7]["max_count"] = tiles.getTilesByType(assets.tile`gravityTile`).length
+    // powerupTileCountList[8]["max_count"] = tiles.getTilesByType(assets.tile`luckyTile`).length
+
+    for(let currentPowerupTile of powerupTileCountList){
+        currentPowerupTile["max_count"] = tiles.getTilesByType(currentPowerupTile["asset"]).length
+        currentPowerupTile["location"] = tiles.getTilesByType(currentPowerupTile["asset"])
+    }
     
 
 
@@ -1079,7 +1093,7 @@ function placePlayerOnTilemap() {
 
 onStart()
 
-function createPortals(statrtTileLocation: tiles.Location, endTileLocation: tiles.Location){
+function createPortals(startTileLocation: tiles.Location): Sprite{
     let startPortal: Sprite = sprites.create(img`
         . . . . . . . . . . . . . . . .
         . . . . . . . . . . . . . . . .
@@ -1101,31 +1115,9 @@ function createPortals(statrtTileLocation: tiles.Location, endTileLocation: tile
         . . . b b b b b b b c c f . . .
     `, SpriteKind.Portal)
 
-    let endPortal: Sprite = sprites.create(img`
-        . . . . . . . . . . . . . . . .
-        . . . . . . . . . . . . . . . .
-        . . . . 2 2 2 2 2 2 2 2 . . . .
-        . . . 2 3 3 3 3 3 3 3 3 2 . . .
-        . . 2 3 3 4 4 4 4 4 4 3 3 2 . .
-        . 2 3 3 4 4 4 1 1 4 4 4 3 3 2 .
-        . 2 3 4 4 4 1 1 4 4 4 4 4 3 2 .
-        . 2 3 4 4 1 1 4 4 4 4 4 4 3 2 .
-        . 2 3 4 4 4 1 1 1 1 4 4 4 3 2 .
-        . 2 3 4 4 4 4 4 4 1 1 4 4 3 2 .
-        . 2 3 4 4 4 4 4 1 1 4 4 4 3 2 .
-        . 2 3 4 4 4 4 1 1 4 4 4 4 3 2 .
-        . 2 3 3 4 4 4 4 4 4 4 4 3 3 2 .
-        . . 2 3 3 4 4 4 4 4 4 3 3 2 . .
-        . . . 2 3 3 3 3 3 3 3 3 2 . . .
-        . . . . 2 2 2 2 2 2 2 2 . . . .
-        . . . . b b b b b c c f . . . .
-        . . . b b b b b b b c c f . . .
-    `, SpriteKind.Portal)
-
-    sprites.setDataSprite(startPortal, "linkedPortal", endPortal)
-    sprites.setDataSprite(endPortal, "linkedPortal", startPortal)
-    tiles.placeOnTile(startPortal, statrtTileLocation)
-    tiles.placeOnTile(endPortal, endTileLocation)
+    sprites.setDataSprite(startPortal, "linkedPortal", null)
+    tiles.placeOnTile(startPortal, startTileLocation)
+    return startPortal
 }
 
 
@@ -2756,6 +2748,7 @@ sprites.onDestroyed(SpriteKind.Player, function(sprite){
 
     createPlayer()
     placePlayerOnTilemap()
+    replenishPowerUpTiles()
 })
 
 function hitPowerBox(tileImage: Image, location: tiles.Location){
@@ -2799,22 +2792,29 @@ sprites.onDestroyed(SpriteKind.Box, function(sprite){
     for(let value of powerupTileCountList){
         sum += value["max_count"]
     }
-    let currentPowerupTiles = powerupTileCountList.filter(function(value, index){
-        if(value["max_count"] > 0){
+   
+    let depletedTileList: tiles.Location[] = tiles.getTilesByType(assets.tile`depletedTile`)
+    if(depletedTileList.length == sum){
+       replenishPowerUpTiles()
+
+        // tiles.setTileAt(tiles.getTilesByType(assets.tile`depletedTile`)._pickRandom(), currentPowerupTiles._pickRandom()["asset"])
+    }
+})
+function replenishPowerUpTiles(){
+    let currentPowerupTiles = powerupTileCountList.filter(function (value, index) {
+        if (value["max_count"] > 0) {
             return true
         } else {
             return false
         }
     })
-    let depletedTileList: tiles.Location[] = tiles.getTilesByType(assets.tile`depletedTile`)
-    if(depletedTileList.length == sum){
-        // depletedTileList.filter(function(location, index){
-        //     if()
-        // })
-        tiles.setTileAt(tiles.getTilesByType(assets.tile`depletedTile`)._pickRandom(), currentPowerupTiles._pickRandom()["asset"])
+    for (let powerTileObject of currentPowerupTiles) {
+        for (let tileLocation of powerTileObject["location"]) {
+            tiles.setTileAt(tileLocation, powerTileObject["asset"])
+        }
+
     }
-    
-})
+}
 
 function createInvertedPlayerWalkingAnimation() {
     characterAnimations.loopFrames(playerSprite, [
@@ -4144,6 +4144,10 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.JumpPadLeft, function (sprite, o
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Switch, function(sprite, otherSprite){
     let wallSprite = sprites.readDataSprite(otherSprite, "myWall")
+    
+    // check to see if the current Switch quantity is 0.
+
+
     tiles.setWallAt(wallSprite.tilemapLocation(), false)
     otherSprite.setImage(img`
         . . . . . . . . . . . . . . . .
@@ -4294,6 +4298,7 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Switch, function(sprite, otherSp
     ], 50, false)
     otherSprite.setFlag(SpriteFlag.Ghost, true)
 })
+
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Portal, function(sprite, otherSprite){
     let destinationPortalSprite: Sprite = sprites.readDataSprite(otherSprite, "linkedPortal")
     if (!destinationPortalSprite){
@@ -4344,8 +4349,10 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Portal, function(sprite, otherSp
         . . . . b b b b b c c f . . . .
         . . . b b b b b b b c c f . . .
     `)
+    pause(100)
+    sprite.vy = -50
     
-    timer.after(5000, function(){
+    timer.after(2500, function(){
         otherSprite.setFlag(SpriteFlag.Ghost, false)
         destinationPortalSprite.setFlag(SpriteFlag.Ghost, false)
         otherSprite.setImage(img`
@@ -4369,24 +4376,24 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Portal, function(sprite, otherSp
             . . . b b b b b b b c c f . . .
         `)
         destinationPortalSprite.setImage(img`
-        . . . . . . . . . . . . . . . .
-        . . . . . . . . . . . . . . . .
-        . . . . 2 2 2 2 2 2 2 2 . . . .
-        . . . 2 3 3 3 3 3 3 3 3 2 . . .
-        . . 2 3 3 4 4 4 4 4 4 3 3 2 . .
-        . 2 3 3 4 4 4 1 1 4 4 4 3 3 2 .
-        . 2 3 4 4 4 1 1 4 4 4 4 4 3 2 .
-        . 2 3 4 4 1 1 4 4 4 4 4 4 3 2 .
-        . 2 3 4 4 4 1 1 1 1 4 4 4 3 2 .
-        . 2 3 4 4 4 4 4 4 1 1 4 4 3 2 .
-        . 2 3 4 4 4 4 4 1 1 4 4 4 3 2 .
-        . 2 3 4 4 4 4 1 1 4 4 4 4 3 2 .
-        . 2 3 3 4 4 4 4 4 4 4 4 3 3 2 .
-        . . 2 3 3 4 4 4 4 4 4 3 3 2 . .
-        . . . 2 3 3 3 3 3 3 3 3 2 . . .
-        . . . . 2 2 2 2 2 2 2 2 . . . .
-        . . . . b b b b b c c f . . . .
-        . . . b b b b b b b c c f . . .
+            . . . . . . . . . . . . . . . .
+            . . . . . . . . . . . . . . . .
+            . . . . 7 7 7 7 7 7 7 7 . . . .
+            . . . 7 4 4 4 4 4 4 4 4 7 . . .
+            . . 7 4 4 5 5 5 5 5 5 4 4 7 . .
+            . 7 4 4 5 5 5 1 1 5 5 5 4 4 7 .
+            . 7 4 5 5 5 1 1 5 5 5 5 5 4 7 .
+            . 7 4 5 5 1 1 5 5 5 5 5 5 4 7 .
+            . 7 4 5 5 5 1 1 1 1 5 5 5 4 7 .
+            . 7 4 5 5 5 5 5 5 1 1 5 5 4 7 .
+            . 7 4 5 5 5 5 5 1 1 5 5 5 4 7 .
+            . 7 4 5 5 5 5 1 1 5 5 5 5 4 7 .
+            . 7 4 4 5 5 5 5 5 5 5 5 4 4 7 .
+            . . 7 4 4 5 5 5 5 5 5 4 4 7 . .
+            . . . 7 4 4 4 4 4 4 4 4 7 . . .
+            . . . . 7 7 7 7 7 7 7 7 . . . .
+            . . . . b b b b b c c f . . . .
+            . . . b b b b b b b c c f . . .
         `)
         isTeleporting = false
     })
@@ -5297,11 +5304,17 @@ function switchGravity() {
 
 function generateTilemapPortals(){
     let portalSpawnTiles: tiles.Location[] = tiles.getTilesByType(assets.tile`portalSpawnTile`)
-    let destinationPortalSpawnTiles: tiles.Location[] = tiles.getTilesByType(assets.tile`portalDestinationSpawnTile`)
     
+    let currentPortal: Sprite = null
+    let previousPortal: Sprite = null 
     
     for (let count = 0; count < portalSpawnTiles.length; count++){
-        createPortals(portalSpawnTiles[count], destinationPortalSpawnTiles[count])
+        currentPortal = createPortals(portalSpawnTiles[count])
+        if(previousPortal){
+            sprites.setDataSprite(previousPortal, "linkedPortal", currentPortal)
+        }
+        previousPortal = currentPortal
+            
         tiles.setTileAt(portalSpawnTiles[count], img`
             . . . . . . . . . . . . . . . .
             . . . . . . . . . . . . . . . .
@@ -5320,28 +5333,10 @@ function generateTilemapPortals(){
             . . . . . . . . . . . . . . . .
             . . . . . . . . . . . . . . . .
         `)
-        tiles.setTileAt(destinationPortalSpawnTiles[count], img`
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-        `)
     }
-
+    sprites.setDataSprite(previousPortal, "linkedPortal", sprites.allOfKind(SpriteKind.Portal)[0])
+    
 }
-
 
 function generateTilemapJumpPads(){
     for (let tileLocation of tiles.getTilesByType(assets.tile`jumpSpawnTile`)) {
