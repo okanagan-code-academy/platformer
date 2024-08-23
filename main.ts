@@ -1231,6 +1231,57 @@ function createSwitchWall(switchTile: tiles.Location, wallTile: tiles.Location){
     sprites.setDataSprite(switchSprite, "myWall", wallSprite)
 }
 
+function createSwitch(switchTile: tiles.Location): Sprite {
+    let switchSprite: Sprite = sprites.create(img`
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . . . . . . . . . . . . .
+        . . . . 2 2 2 . . . . . . . . .
+        . . . . 2 2 2 . . . . . . . . .
+        . . . . . 4 . . . . . . . . . .
+        . . . . . 4 . . . . . . . . . .
+        . . . . . 4 . . . . . . . . . .
+        c c c c b 4 d d d d b c c c c c
+        c c c c b b b b b b b c c c c c
+        c c c c c c c c c c c c c c c c
+    `, SpriteKind.Switch)
+    
+    tiles.placeOnTile(switchSprite, switchTile)
+    sprites.setDataSprite(switchSprite, "myWall", null)
+    return switchSprite
+}
+
+
+function createWall(wallTile: tiles.Location, switchQuantity: number): Sprite {
+    let wallSprite: Sprite = sprites.create(img`
+        . . f . . f . . f . . f . . f .
+        c c c c c c c c c c c c c c c c
+        . . f . . f . . f . . f . . f .
+        . . f . . f . . f . . f . . f .
+        c c c c c c c c c c c c c c c c
+        . . f . . f . . f . . f . . f .
+        . . f . . f . . f . . f . . f .
+        c c c c c c c c c c c c c c c c
+        . . f . . f . . f . . f . . f .
+        . . f . . f . . f . . f . . f .
+        c c c c c c c c c c c c c c c c
+        . . f . . f . . f . . f . . f .
+        . . f . . f . . f . . f . . f .
+        c c c c c c c c c c c c c c c c
+        . . f . . f . . f . . f . . f .
+        . . f . . f . . f . . f . . f .
+    `, SpriteKind.Tile)
+
+    tiles.placeOnTile(wallSprite, wallTile)
+    sprites.setDataNumber(wallSprite, "switchQuantity", switchQuantity)
+    return wallSprite
+}
+
 
 function createShopSprite(tileLocation: tiles.Location){
     let shopSprite: Sprite = sprites.create(img`
@@ -4143,12 +4194,8 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.JumpPadLeft, function (sprite, o
     otherSprite.setFlag(SpriteFlag.Ghost, false)
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Switch, function(sprite, otherSprite){
+    otherSprite.setFlag(SpriteFlag.Ghost, true)
     let wallSprite = sprites.readDataSprite(otherSprite, "myWall")
-    
-    // check to see if the current Switch quantity is 0.
-
-
-    tiles.setWallAt(wallSprite.tilemapLocation(), false)
     otherSprite.setImage(img`
         . . . . . . . . . . . . . . . .
         . . . . . . . . . . . . . . . .
@@ -4167,6 +4214,19 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Switch, function(sprite, otherSp
         c c c c b b b b b b b c c c c c
         c c c c c c c c c c c c c c c c
     `)
+    if(!wallSprite){
+        // sprite.sayText("No wall", 100)
+        return
+    }
+    sprites.changeDataNumberBy(wallSprite, "switchQuantity", -1)
+    
+    if (sprites.readDataNumber(wallSprite, "switchQuantity") > 0){
+        return
+    }
+    // check to see if the current Switch quantity is 0.
+
+
+    tiles.setWallAt(wallSprite.tilemapLocation(), false)
     wallSprite.lifespan = 350
     animation.runImageAnimation(wallSprite, [
         img`
@@ -4296,7 +4356,7 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Switch, function(sprite, otherSp
             . . . . . . . . . . . . . . . .
         `,        
     ], 50, false)
-    otherSprite.setFlag(SpriteFlag.Ghost, true)
+    
 })
 
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Portal, function(sprite, otherSprite){
@@ -5405,46 +5465,64 @@ function generateTilemapJumpPads(){
 }
 
 function generateTilemapSwitchWall(){
-    for(let i = 0; i < tiles.getTilesByType(assets.tile`switchSpawnTile`).length; i++){
-        let switchTile = tiles.getTilesByType(assets.tile`switchSpawnTile`)[i]
-        let wallTile = tiles.getTilesByType(assets.tile`removableWallSpawnTile`)[i]
-        createSwitchWall(switchTile, wallTile)
-        tiles.setTileAt(switchTile, img`
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-        `)
-        tiles.setTileAt(wallTile, img`
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-            . . . . . . . . . . . . . . . .
-        `)
+    let switchQuantity: number = tiles.getTilesByType(assets.tile`switchSpawnTile`).length
+    let wallQuantity: number = tiles.getTilesByType(assets.tile`removableWallSpawnTile`).length
+    
+    if(wallQuantity <= 0){
+        return
+    }
+
+    let wallSwitchRatio: number = Math.floor(switchQuantity / wallQuantity)
+
+    let currentSwitches: Sprite[] = []
+    let currentWalls: Sprite[] = []
+
+    for (let tileLocation of tiles.getTilesByType(assets.tile`switchSpawnTile`)){
+        let switchSprite: Sprite = createSwitch(tileLocation)
+        tiles.setTileAt(tileLocation, assets.tile`transparentTile`)
+        currentSwitches.push(switchSprite)
+    }
+    for (let tileLocation of tiles.getTilesByType(assets.tile`removableWallSpawnTile`)){
+        let wallSprite: Sprite = createWall(tileLocation, wallSwitchRatio)
+        tiles.setTileAt(tileLocation, assets.tile`transparentTile`)
+        switchQuantity -= wallSwitchRatio
+        wallQuantity -= 1
+        if(wallQuantity > 0){
+            wallSwitchRatio = Math.floor(switchQuantity / wallQuantity)
+        }
+        currentWalls.push(wallSprite)
+    }
+    console.log(currentSwitches)
+    let wallSprite: Sprite = null
+    while(currentWalls.length > 0){
+        wallSprite = currentWalls.pop()
+        if(!wallSprite){
+            break
+        }
+        currentSwitches = currentSwitches.sort(sortByDistance)
+        
+        console.log(currentSwitches)
+        let count: number = 0
+        while (count < sprites.readDataNumber(wallSprite, "switchQuantity")){
+            let switchSprite: Sprite = currentSwitches.pop()
+            sprites.setDataSprite(switchSprite, "myWall", wallSprite)
+            count++
+        }
+    }
+    function sortByDistance(sprite1: Sprite, sprite2: Sprite): number{
+        let length1: number = spriteutils.distanceBetween(wallSprite, sprite1)
+        let length2: number = spriteutils.distanceBetween(wallSprite, sprite2)
+        
+        console.log(length1)
+        console.log(length2)
+
+        if (length1 < length2){
+            return 1
+        } else if (length1 >= length2){
+            return -1
+        } else {
+            return 0
+        }
     }
 }
 
