@@ -28,56 +28,38 @@ namespace SpriteKind {
     export const Portal = SpriteKind.create()  
 }
 
-
 let currentLevel: number = 9
-let powerupTileCountList = [
-    {
-        "asset" : assets.tile`growTile`,
-        "max_count" : 0,
-        "location": [tiles.getTileLocation(0, 0)],
-    },
-    {
-        "asset": assets.tile`shootTile`,
-        "max_count": 0,
-        "location": [tiles.getTileLocation(0, 0)],
-    },
-    {
-        "asset": assets.tile`shrinkTile`,
-        "max_count": 0,
-        "location": [tiles.getTileLocation(0, 0)],
-    },
-    {
-        "asset": assets.tile`batTile`,
-        "max_count": 0,
-        "location": [tiles.getTileLocation(0, 0)],
-    },
-    {
-        "asset": assets.tile`heartTile`,
-        "max_count": 0,
-        "location": [tiles.getTileLocation(0, 0)],
-    },
-    {
-        "asset": assets.tile`invincibleTile`,
-        "max_count": 0,
-        "location": [tiles.getTileLocation(0, 0)],
-    },
-    {
-        "asset": assets.tile`wallJumpTile`,
-        "max_count": 0,
-        "location": [tiles.getTileLocation(0, 0)],
-    },
-    {
-        "asset": assets.tile`gravityTile`,
-        "max_count": 0,
-        "location": [tiles.getTileLocation(0, 0)],
-    },
-    {
-        "asset": assets.tile`luckyTile`,
-        "max_count": 0,
-        "location": [tiles.getTileLocation(0, 0)],
-    },
-   
+
+class PowerUpTileObject {
+    asset: Image
+    maxCount: number = 0
+    location: tiles.Location[] = []
+    constructor(asset: Image, count: number){
+        this.asset = asset
+        this.maxCount = count
+    }
+    addLocation(tileLocation: tiles.Location) : void {
+        this.location.push(tileLocation)
+    }
+    getLocations() : tiles.Location[]{
+        return this.location
+    }
+    setLocations(tileLocations: tiles.Location[]) : void {
+        this.location = tileLocations
+    }
+}
+let powerupTileCountList: PowerUpTileObject[] = [
+    new PowerUpTileObject(assets.tile`growTile`, 0),
+    new PowerUpTileObject(assets.tile`shootTile`, 0),
+    new PowerUpTileObject(assets.tile`shrinkTile`, 0),
+    new PowerUpTileObject(assets.tile`batTile`, 0),
+    new PowerUpTileObject(assets.tile`heartTile`, 0),
+    new PowerUpTileObject(assets.tile`invincibleTile`, 0),
+    new PowerUpTileObject(assets.tile`wallJumpTile`, 0),
+    new PowerUpTileObject(assets.tile`gravityTile`, 0),
+    new PowerUpTileObject(assets.tile`luckyTile`, 0),
 ]
+
 let keysAmount: number = 0
 let levelTransition: boolean = false
 
@@ -120,19 +102,32 @@ let worldLevelsList: tiles.TileMapData[][] = [
     ]
 
 info.setScore(0)
-let airEnemyObject = {
-    "imgae" : [
-        assets.image`drone`,
-    ],
-    "heatlh" : [1, ],
+
+class EnemyObject {
+    images: Image[] = []
+    health: number = 0
+    animations: Image[][] = []
+    
+    constructor(image: Image, health: number){
+        this.images.push(image)
+        this.health = health
+    }
+    addAnimation(animation: Image[]) : void{
+        this.animations.push(animation)
+    }
+    setAnimations(animations: Image[][]) : void{
+        this.animations = animations
+    }
+    addImage(image: Image) : void{
+        this.images.push(image)
+    }
 }
 
-let groundEnemyObject = {
-    "image" : [
-        assets.image`zooKeeper`,
-    ],
-    "heatlh": [1,],
-    "animations" : [
+let airEnemyObject= new EnemyObject(assets.image`drone`, 1)
+
+let groundEnemyObject = new EnemyObject(assets.image`zooKeeper`, 1)
+groundEnemyObject.setAnimations(
+    [
         [
             img`
                 . . . f f f f f . . . .
@@ -151,7 +146,7 @@ let groundEnemyObject = {
                 . . f 6 6 6 f e e f . .
                 . . . f f f f f f . . .
                 . . . . . f f f . . . .
-            `, 
+            `,
             img`
                 . . . . . . . . . . . .
                 . . . f f f f f f . . .
@@ -169,7 +164,7 @@ let groundEnemyObject = {
                 . f f 6 6 f e e f f f .
                 . f f f f f f f f f f .
                 . . f f f . . . f f . .
-            `, 
+            `,
             img`
                 . . . . . . . . . . . .
                 . . . f f f f f f . . .
@@ -246,10 +241,8 @@ let groundEnemyObject = {
             `
         ]
     ]
-}
-let shootingEnemyObject = {
-    "image" : [
-        img`
+)
+let shootingEnemyObject = new EnemyObject(img`
             . . . . . . . . . . . . . . . .
             . . . . . . 4 4 4 4 . . . . . .
             . . . . 4 4 4 4 4 4 4 4 . . . .
@@ -266,13 +259,8 @@ let shootingEnemyObject = {
             . . . . 4 4 4 4 4 4 4 4 . . . .
             . . . . . . 4 4 4 4 . . . . . .
             . . . . . . . . . . . . . . . .
-        `
-    ],
-    "health" : [1,]
-}
-let spinningEnemyObject = {
-    "image" : [
-        img`
+        `, 1)
+let spinningEnemyObject = new EnemyObject(img`
             . . . . . . . . . . . . . . . .
             . . . . . . . . . . . . . . . .
             . . . . . . . . . . . . . . . .
@@ -289,8 +277,8 @@ let spinningEnemyObject = {
             . . . . . 4 4 4 4 4 4 4 . . . .
             . . . . . . . . . . . . . . . .
             . . . . . . . . . . . . . . . .
-        `,
-        img`
+        `, 0)
+spinningEnemyObject.addImage(img`
             . . . . . . . . . . . . . . . .
             . . . . . . . . . . . . . . . .
             . . . . . . . . . . . . . . . .
@@ -307,8 +295,8 @@ let spinningEnemyObject = {
             . . . . . 7 7 7 7 7 7 7 . . . .
             . . . . . . . . . . . . . . . .
             . . . . . . . . . . . . . . . .
-        `,
-        img`
+        `)
+spinningEnemyObject.addImage(img`
             . . . . . . . . . . . . . . . .
             . . . . . . . . . . . . . . . .
             . . . . . . . . . . . . . . . .
@@ -325,9 +313,8 @@ let spinningEnemyObject = {
             . . . . . 8 8 8 8 8 8 8 . . . .
             . . . . . . . . . . . . . . . .
             . . . . . . . . . . . . . . . .
-        `,
-    ]
-}
+        `)
+
 function createEnemyAnimations(animationList: Image[][], sprite: Sprite, animationInterval: number){
     // A for loop that sets animations based on left, right, up, and down
     let animationDirection = [Predicate.MovingLeft, Predicate.MovingRight, Predicate.MovingUp, Predicate.MovingDown]
@@ -338,18 +325,18 @@ function createEnemyAnimations(animationList: Image[][], sprite: Sprite, animati
     }
 }
 function createSpinningEnemy(tileLocation: tiles.Location, enemyType: number, amount: number){
-    if(enemyType < 0 || enemyType >= spinningEnemyObject["image"].length){
+    if(enemyType < 0 || enemyType >= spinningEnemyObject.images.length){
         console.log("Invalid Spinning Enemy")
         return
     }
-    let enemySprite: Sprite = sprites.create(spinningEnemyObject["image"][enemyType], SpriteKind.SpinEnemy)
+    let enemySprite: Sprite = sprites.create(spinningEnemyObject.images[enemyType], SpriteKind.SpinEnemy)
     enemySprite.z = 5
     tiles.placeOnTile(enemySprite, tileLocation)
 
     let orbitingSpritesList: Sprite[] = []
 
     for(let i = 0; i < amount; i+=1){
-        let orbitingSprite: Sprite = sprites.create(spinningEnemyObject["image"][enemyType], SpriteKind.SpinEnemy)
+        let orbitingSprite: Sprite = sprites.create(spinningEnemyObject.images[enemyType], SpriteKind.SpinEnemy)
         orbitingSprite.setFlag(SpriteFlag.GhostThroughWalls, true)
         enemySprite.z = 6
         orbitingSpritesList.push(orbitingSprite)
@@ -581,7 +568,7 @@ function createShellEnemy(spriteLocation: Sprite){
 }
 
 function createShootingEnemy(tileLocation: tiles.Location){
-    let enemySprite: Sprite = sprites.create(shootingEnemyObject["image"][0], SpriteKind.Enemy)
+    let enemySprite: Sprite = sprites.create(shootingEnemyObject.images[0], SpriteKind.Enemy)
     enemySprite.z = 5
     sprites.setDataString(enemySprite, "type", "shooting")
     tiles.placeOnTile(enemySprite, tileLocation)
@@ -615,7 +602,7 @@ function createShootingEnemy(tileLocation: tiles.Location){
 }
 
 function createGroundEnemy(tileLocation: tiles.Location){
-    let enemySprite = sprites.create(groundEnemyObject["image"][0], SpriteKind.Enemy)
+    let enemySprite = sprites.create(groundEnemyObject.images[0], SpriteKind.Enemy)
     enemySprite.z = 5
     enemySprite.ay = 300
     let directionX: number = 0
@@ -631,7 +618,7 @@ function createGroundEnemy(tileLocation: tiles.Location){
     createEnemyAnimations(groundEnemyObject["animations"], enemySprite, 100)
 }
 function createAirEnemy(tileLocation: tiles.Location){
-    let enemySprite = sprites.create(airEnemyObject["imgae"][0], SpriteKind.Enemy)
+    let enemySprite = sprites.create(airEnemyObject.images[0], SpriteKind.Enemy)
     enemySprite.z = 5
     sprites.setDataString(enemySprite, "type", "air")
     tiles.placeOnTile(enemySprite, tileLocation)
@@ -711,7 +698,7 @@ function generateTilemapEnemies(){
         `)
     }
     for (let tileLocation of tiles.getTilesByType(assets.tile`spinningEnemySpawnTile`)) {
-        createSpinningEnemy(tileLocation, Math.randomRange(0, spinningEnemyObject["image"].length - 1), 3)
+        createSpinningEnemy(tileLocation, Math.randomRange(0, spinningEnemyObject.images.length - 1), 3)
         tiles.setTileAt(tileLocation, img`
             . . . . . . . . . . . . . . . .
             . . . . . . . . . . . . . . . .
@@ -1069,8 +1056,8 @@ function createLevel() {
     
 
     for(let currentPowerupTile of powerupTileCountList){
-        currentPowerupTile["max_count"] = tiles.getTilesByType(currentPowerupTile["asset"]).length
-        currentPowerupTile["location"] = tiles.getTilesByType(currentPowerupTile["asset"])
+        currentPowerupTile.maxCount = tiles.getTilesByType(currentPowerupTile.asset).length
+        currentPowerupTile.setLocations(tiles.getTilesByType(currentPowerupTile.asset))
     }
     
 
@@ -2851,7 +2838,7 @@ sprites.onDestroyed(SpriteKind.Box, function(sprite){
     tiles.setTileAt(sprite.tilemapLocation(), assets.tile`depletedTile`)
     let sum: number = 0
     for(let value of powerupTileCountList){
-        sum += value["max_count"]
+        sum += value.maxCount
     }
    
     let depletedTileList: tiles.Location[] = tiles.getTilesByType(assets.tile`depletedTile`)
@@ -2863,15 +2850,15 @@ sprites.onDestroyed(SpriteKind.Box, function(sprite){
 })
 function replenishPowerUpTiles(){
     let currentPowerupTiles = powerupTileCountList.filter(function (value, index) {
-        if (value["max_count"] > 0) {
+        if (value.maxCount > 0) {
             return true
         } else {
             return false
         }
     })
     for (let powerTileObject of currentPowerupTiles) {
-        for (let tileLocation of powerTileObject["location"]) {
-            tiles.setTileAt(tileLocation, powerTileObject["asset"])
+        for (let tileLocation of powerTileObject.getLocations()) {
+            tiles.setTileAt(tileLocation, powerTileObject.asset)
         }
 
     }
